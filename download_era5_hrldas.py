@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+##############################################################################
+# History:
+#   2022.12.05  Created by XUE Lingbo (CCS, Tsukuba, Japan) 
+##############################################################################
+
 import os
 import cdsapi
 from collections import namedtuple
