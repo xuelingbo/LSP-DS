@@ -1,3 +1,11 @@
+# Land-Surface-Physics-Based Downscaling Approach (LSP-DS)
+
+This is the offical LSP-DS Github repository for code downloading and contribution.
+
+## LSP-DS reference papers
+
+**LSP-DS reference paper**: Xue, L., Doan, Q.‐V., Kusaka, H., He, C., & Chen, F. (2024). Insights into urban heat island and heat waves synergies revealed by a Land‐Surface‐Physics‐Based Downscaling method. Journal of Geophysical Research: Atmospheres, 129, e2023JD040531. https://doi.org/10.1029/ 2023JD040531
+
 # HRLDAS (High Resolution Land Data Assimilation System) 
 The High-Resolution Land Data Assimilation System (HRLDAS) is a widely-used open-source offline community framework/driver of land surface models (LSMs). HRLDAS uses a combination of observed and analyzed meterological forcing (precipitation, shortwave and longwave radiation, surface wind, specific humidity, temperature, surface pressure) to drive a LSM to simulate the evolution of land surface states. The system has been developed to leverage the WRF pre-processed input data (e.g., WPS geo_em* file) and conduct computationally-efficient model run to generate more accurate initial land state conditions and/or produce the offline LSM simulations alone for scientific studies.
 
@@ -35,14 +43,6 @@ Technical documentation freely available at http://dx.doi.org/10.5065/ew8g-yr95
 **Noah-MP version 5.0 model description paper**:  He, C., Valayamkunnath, P., Barlage, M., Chen, F., Gochis, D., Cabell, R., Schneider, T., Rasmussen, R., Niu, G.-Y., Yang, Z.-L., Niyogi, D., and Ek, M.: Modernizing the open-source community Noah with multi-parameterization options (Noah-MP) land surface model (version 5.0) with enhanced modularity, interoperability, and applicability, Geosci. Model Dev., 16, 5131–5151, https://doi.org/10.5194/gmd-16-5131-2023, 2023.
 
 **Noah-MP development future priority paper**: He, C., Chen, F., Barlage, M., Yang, Z.-L., Wegiel, J. W., Niu, G.-Y., Gochis, D., Mocko, D. M., Abolafia-Rosenzweig, R., Zhang, Z., Lin, T.-S., Valayamkunnath, P., Ek, M., and Niyogi, D. (2023): Enhancing the community Noah-MP land model capabilities for Earth sciences and applications, Bull. Amer. Meteor. Soc., E2023–E2029, https://doi.org/10.1175/BAMS-D-23-0249.1
-
-# Land-Surface-Physics-Based Downscaling Approach (LSP-DS)
-
-This is the offical LSP-DS Github repository for code downloading and contribution.
-
-## LSP-DS reference papers
-
-**LSP-DS reference paper**: Xue, L., Doan, Q.‐V., Kusaka, H., He, C., & Chen, F. (2024). Insights into urban heat island and heat waves synergies revealed by a Land‐Surface‐Physics‐Based Downscaling method. Journal of Geophysical Research: Atmospheres, 129, e2023JD040531. https://doi.org/10.1029/ 2023JD040531
 
 # Download the LSP-DS code
 
