@@ -1,3 +1,14 @@
+# HRLDAS (High Resolution Land Data Assimilation System) 
+The High-Resolution Land Data Assimilation System (HRLDAS) is a widely-used open-source offline community framework/driver of land surface models (LSMs). HRLDAS uses a combination of observed and analyzed meterological forcing (precipitation, shortwave and longwave radiation, surface wind, specific humidity, temperature, surface pressure) to drive a LSM to simulate the evolution of land surface states. The system has been developed to leverage the WRF pre-processed input data (e.g., WPS geo_em* file) and conduct computationally-efficient model run to generate more accurate initial land state conditions and/or produce the offline LSM simulations alone for scientific studies.
+HRLDAS model website: [https://ral.ucar.edu/solutions/products/high-resolution-land-data-assimilation-system-hrldas](https://ral.ucar.edu/solutions/products/high-resolution-land-data-assimilation-system-hrldas)
+HRLDAS Community Model Repository: [https://github.com/NCAR/hrldas](https://github.com/NCAR/hrldas)
+
+# Noah-MP<sup>®</sup>
+
+Noah-MP<sup>®</sup> is a widely-used state-of-the-art land surface model used in many research and operational weather/climate models (e.g., HRLDAS, WRF, MPAS, WRF-Hydro/NWM, NOAA/UFS, NASA/LIS, etc.). Noah-MP is a community open-source model developed with the contributions from the entire scientific community. 
+Noah-MP model website: https://ral.ucar.edu/solutions/products/noah-multiparameterization-land-surface-model-noah-mp-lsm
+Noah-MP Community Model Repository: https://github.com/NCAR/noahmp/blob/master/README.md
+
 # Download the LSP-DS code
 
 To download the LSP-DS code, use the following command:
