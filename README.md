@@ -64,6 +64,8 @@ To modify the original HRLDAS/Noah-MP code, please use the following command:
 
 This command will copy the modified files and cover the original one.
 
+There still some problems, so please skip this step for now.
+
 # Compile HRLDAS
 
 Please follow `hrldas_manual.ipynb` to install the necessary libraries and compile the HRLDAS.
