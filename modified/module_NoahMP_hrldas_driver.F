@@ -22,6 +22,16 @@ module module_NoahMP_hrldas_driver
 
   implicit none
 
+! constants xue.lingbo 2024.08.05
+#if ( NMM_CORE == 1 )
+   REAL    , PARAMETER :: r_d          = 287.04
+   REAL    , PARAMETER :: cp           = 1004.6
+#else
+   REAL    , PARAMETER :: r_d          = 287.
+   REAL    , PARAMETER :: cp           = 7.*r_d/2.
+#endif
+   REAL    , PARAMETER :: rcp          = r_d/cp
+
 #ifdef MPP_LAND
   include "mpif.h"
 #endif
@@ -1046,17 +1056,20 @@ contains
             IF(NoahmpIO%SF_URBAN_PHYSICS == 1) THEN
                DO J=NoahmpIO%jts, NoahmpIO%jte                             
                   DO I=NoahmpIO%its, NoahmpIO%ite                          
-                     IF( IVGTYP(I,J) == NoahmpIO%ISURBAN_TABLE .or. IVGTYP(I,J) == NoahmpIO%LCZ_1_TABLE .or. &
-                         IVGTYP(I,J) == NoahmpIO%LCZ_2_TABLE   .or. IVGTYP(I,J) == NoahmpIO%LCZ_3_TABLE .or. &
-                         IVGTYP(I,J) == NoahmpIO%LCZ_4_TABLE   .or. IVGTYP(I,J) == NoahmpIO%LCZ_5_TABLE .or. &
-                         IVGTYP(I,J) == NoahmpIO%LCZ_6_TABLE   .or. IVGTYP(I,J) == NoahmpIO%LCZ_7_TABLE .or. &
-                         IVGTYP(I,J) == NoahmpIO%LCZ_8_TABLE   .or. IVGTYP(I,J) == NoahmpIO%LCZ_9_TABLE .or. &
-                         IVGTYP(I,J) == NoahmpIO%LCZ_10_TABLE  .or. IVGTYP(I,J) == NoahmpIO%LCZ_11_TABLE ) THEN
+                     IF( NoahmpIO%IVGTYP(I,J) == NoahmpIO%ISURBAN_TABLE .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_1_TABLE .or. &
+                         NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_2_TABLE   .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_3_TABLE .or. &
+                         NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_4_TABLE   .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_5_TABLE .or. &
+                         NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_6_TABLE   .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_7_TABLE .or. &
+                         NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_8_TABLE   .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_9_TABLE .or. &
+                         NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_10_TABLE  .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_11_TABLE ) THEN
                         
-                        Q2(I,J)  = (NoahmpIO%FVEGXY(I,J)*NoahmpIO%Q2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%Q2MBXY(I,J))*(1.-NoahmpIO%FRC_URB2D(I,J)) +   &
+                        NoahmpIO%Q2(I,J)  = (NoahmpIO%FVEGXY(I,J)*NoahmpIO%Q2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%Q2MBXY(I,J))*(1.-NoahmpIO%FRC_URB2D(I,J)) +   &
                                     NoahmpIO%Q2_URB2D(I,J)*NoahmpIO%FRC_URB2D(I,J)
-                        T2(I,J)  = (NoahmpIO%FVEGXY(I,J)*NoahmpIO%T2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%T2MBXY(I,J))*(1.-NoahmpIO%FRC_URB2D(I,J)) +   &
-                                    (NoahmpIO%TH2_URB2D(i,j)/((1.E5/NoahmpIO%PSFC(i,j))**(287.04/1004.6)))*NoahmpIO%FRC_URB2D(I,J)   ! rcp = r_d/cp
+                        NoahmpIO%T2(I,J)  = (NoahmpIO%FVEGXY(I,J)*NoahmpIO%T2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%T2MBXY(I,J))*(1.-NoahmpIO%FRC_URB2D(I,J)) +   &
+                                    (NoahmpIO%TH2_URB2D(i,j)/((1.E5/NoahmpIO%FORCPLSM(i,j))**rcp))*NoahmpIO%FRC_URB2D(I,J) 
+                     ELSE
+                        NoahmpIO%Q2(I,J)  = NoahmpIO%FVEGXY(I,J)*NoahmpIO%Q2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%Q2MBXY(I,J)
+                        NoahmpIO%T2(I,J)  = NoahmpIO%FVEGXY(I,J)*NoahmpIO%T2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%T2MBXY(I,J) 
                      END IF                                      
                   ENDDO                                            
                ENDDO                                                
@@ -1294,57 +1307,59 @@ contains
            ! For now, no urban output variables included
            ! add urban output variables   ! xue.lingbo 2024.05.28
            if ( NoahmpIO%SF_URBAN_PHYSICS > 0 ) then
-               call add_to_output(     NoahmpIO%SH_URB2D  ,      "SH_URB2D" )
-               call add_to_output(     NoahmpIO%LH_URB2D  ,      "LH_URB2D" )
-               call add_to_output(      NoahmpIO%G_URB2D  ,       "G_URB2D" )
-               call add_to_output(     NoahmpIO%RN_URB2D  ,      "RN_URB2D" )
-               call add_to_output(     NoahmpIO%TS_URB2D  ,      "TS_URB2D" )
-               call add_to_output(    NoahmpIO%FRC_URB2D  ,     "FRC_URB2D" )
-               call add_to_output(  NoahmpIO%UTYPE_URB2D  ,   "UTYPE_URB2D" )
-               call add_to_output(     NoahmpIO%LP_URB2D  ,      "LP_URB2D" )
-               call add_to_output(     NoahmpIO%LB_URB2D  ,      "LB_URB2D" )
-               call add_to_output(    NoahmpIO%HGT_URB2D  ,     "HGT_URB2D" ) 
-               call add_to_output(     NoahmpIO%MH_URB2D  ,      "MH_URB2D" )
-               call add_to_output(   NoahmpIO%STDH_URB2D  ,    "STDH_URB2D" )
+               call add_to_output(     NoahmpIO%SH_URB2D  ,      "SH_URB2D"  , "" , "" )
+               call add_to_output(     NoahmpIO%LH_URB2D  ,      "LH_URB2D"  , "" , "" )
+               call add_to_output(      NoahmpIO%G_URB2D  ,       "G_URB2D"  , "" , "" )
+               call add_to_output(     NoahmpIO%RN_URB2D  ,      "RN_URB2D"  , "" , "" )
+               call add_to_output(     NoahmpIO%TS_URB2D  ,      "TS_URB2D"  , "" , "" )
+               call add_to_output(    NoahmpIO%FRC_URB2D  ,     "FRC_URB2D"  , "" , "" )
+               call add_to_output(  NoahmpIO%UTYPE_URB2D  ,   "UTYPE_URB2D"  , "" , "" )
+               call add_to_output(     NoahmpIO%LP_URB2D  ,      "LP_URB2D"  , "" , "" )
+               call add_to_output(     NoahmpIO%LB_URB2D  ,      "LB_URB2D"  , "" , "" )
+               call add_to_output(    NoahmpIO%HGT_URB2D  ,     "HGT_URB2D"  , "" , "" ) 
+               call add_to_output(     NoahmpIO%MH_URB2D  ,      "MH_URB2D"  , "" , "" )
+               call add_to_output(   NoahmpIO%STDH_URB2D  ,    "STDH_URB2D"  , "" , "" )
                   
                if ( NoahmpIO%SF_URBAN_PHYSICS == 1 ) then  ! single layer urban model  
-                  call add_to_output(NoahmpIO%TH2_URB2D  , "TH2_URB2D", ""                                     , ""                    )
-                  call add_to_output(NoahmpIO%Q2_URB2D   , "Q2_URB2D" , ""                                     , ""                    )
+                  call add_to_output(NoahmpIO%TH2_URB2D   ,     "TH2_URB2D"  , "" , "" )
+                  call add_to_output(NoahmpIO%Q2_URB2D    ,      "Q2_URB2D"  , "" , "" )
 
-                  call add_to_output(NoahmpIO%T2        , "T2"      , ""                                     , ""      )
-                  call add_to_output(NoahmpIO%Q2        , "Q2"      , ""                                     , ""      )
-                  call add_to_output(NoahmpIO%TSK        , "TSK"      , ""                                     , ""      )
+                  call add_to_output(NoahmpIO%T2          ,            "T2"  , "" , "" )
+                  call add_to_output(NoahmpIO%Q2          ,            "Q2"  , "" , "" )
+                  call add_to_output(NoahmpIO%TSK         ,           "TSK"  , "" , "" )
 
-                  call add_to_output(    NoahmpIO%CMR_SFCDIF ,     "CMR_SFCDIF" )
-                  call add_to_output(    NoahmpIO%CHR_SFCDIF ,     "CHR_SFCDIF" )
-                  call add_to_output(    NoahmpIO%CMC_SFCDIF ,     "CMC_SFCDIF" )
-                  call add_to_output(    NoahmpIO%CHC_SFCDIF ,     "CHC_SFCDIF" )
-                  call add_to_output(   NoahmpIO%CMGR_SFCDIF ,    "CMGR_SFCDIF" )
-                  call add_to_output(   NoahmpIO%CHGR_SFCDIF ,    "CHGR_SFCDIF" )
-                  call add_to_output(     NoahmpIO%TR_URB2D  ,      "TR_URB2D" )
-                  call add_to_output(     NoahmpIO%TB_URB2D  ,      "TB_URB2D" )
-                  call add_to_output(     NoahmpIO%TG_URB2D  ,      "TG_URB2D" )
-                  call add_to_output(     NoahmpIO%TC_URB2D  ,      "TC_URB2D" )
-                  call add_to_output(     NoahmpIO%QC_URB2D  ,      "QC_URB2D" )
-                  call add_to_output(     NoahmpIO%UC_URB2D  ,      "UC_URB2D" )
-                  call add_to_output(   NoahmpIO%XXXR_URB2D  ,    "XXXR_URB2D" )
-                  call add_to_output(   NoahmpIO%XXXB_URB2D  ,    "XXXB_URB2D" )
-                  call add_to_output(   NoahmpIO%XXXG_URB2D  ,    "XXXG_URB2D" )
-                  call add_to_output(   NoahmpIO%XXXC_URB2D  ,    "XXXC_URB2D" )
-                  call add_to_output(    NoahmpIO%TRL_URB3D  ,     "TRL_URB3D", layers="SOIL" )
-                  call add_to_output(    NoahmpIO%TBL_URB3D  ,     "TBL_URB3D", layers="SOIL" )
-                  call add_to_output(    NoahmpIO%TGL_URB3D  ,     "TGL_URB3D", layers="SOIL" )
-                  call add_to_output(   NoahmpIO%CMCR_URB2D  ,    "CMCR_URB2D" )
-                  call add_to_output(    NoahmpIO%TGR_URB2D  ,     "TGR_URB2D" )
-                  call add_to_output(   NoahmpIO%TGRL_URB3D  ,    "TGRL_URB3D", layers="SOIL" )
-                  call add_to_output(    NoahmpIO%SMR_URB3D  ,     "SMR_URB3D", layers="SOIL" )
-                  call add_to_output(  NoahmpIO%DRELR_URB2D  ,   "DRELR_URB2D" )
-                  call add_to_output(  NoahmpIO%DRELB_URB2D  ,   "DRELB_URB2D" )
-                  call add_to_output(  NoahmpIO%DRELG_URB2D  ,   "DRELG_URB2D" )
-                  call add_to_output(NoahmpIO%FLXHUMR_URB2D  , "FLXHUMR_URB2D" )
-                  call add_to_output(NoahmpIO%FLXHUMB_URB2D  , "FLXHUMB_URB2D" )
-                  call add_to_output(NoahmpIO%FLXHUMG_URB2D  , "FLXHUMG_URB2D" )
+                  call add_to_output(    NoahmpIO%CMR_SFCDIF ,     "CMR_SFCDIF"  , "" , "" )
+                  call add_to_output(    NoahmpIO%CHR_SFCDIF ,     "CHR_SFCDIF"  , "" , "" )
+                  call add_to_output(    NoahmpIO%CMC_SFCDIF ,     "CMC_SFCDIF"  , "" , "" )
+                  call add_to_output(    NoahmpIO%CHC_SFCDIF ,     "CHC_SFCDIF"  , "" , "" )
+                  call add_to_output(   NoahmpIO%CMGR_SFCDIF ,    "CMGR_SFCDIF"  , "" , "" )
+                  call add_to_output(   NoahmpIO%CHGR_SFCDIF ,    "CHGR_SFCDIF"  , "" , "" )
+                  call add_to_output(     NoahmpIO%TR_URB2D  ,      "TR_URB2D"   , "" , "" )
+                  call add_to_output(     NoahmpIO%TB_URB2D  ,      "TB_URB2D"   , "" , "" )
+                  call add_to_output(     NoahmpIO%TG_URB2D  ,      "TG_URB2D"   , "" , "" )
+                  call add_to_output(     NoahmpIO%TC_URB2D  ,      "TC_URB2D"   , "" , "" )
+                  call add_to_output(     NoahmpIO%QC_URB2D  ,      "QC_URB2D"   , "" , "" )
+                  call add_to_output(     NoahmpIO%UC_URB2D  ,      "UC_URB2D"   , "" , "" )
+                  call add_to_output(   NoahmpIO%XXXR_URB2D  ,    "XXXR_URB2D"   , "" , "" )
+                  call add_to_output(   NoahmpIO%XXXB_URB2D  ,    "XXXB_URB2D"   , "" , "" )
+                  call add_to_output(   NoahmpIO%XXXG_URB2D  ,    "XXXG_URB2D"   , "" , "" )
+                  call add_to_output(   NoahmpIO%XXXC_URB2D  ,    "XXXC_URB2D"   , "" , "" )
+                  call add_to_output(    NoahmpIO%TRL_URB3D  ,     "TRL_URB3D"   , "" , "" , "SOIL" )
+                  call add_to_output(    NoahmpIO%TBL_URB3D  ,     "TBL_URB3D"   , "" , "" , "SOIL" )
+                  call add_to_output(    NoahmpIO%TGL_URB3D  ,     "TGL_URB3D"   , "" , "" , "SOIL" )
+                  call add_to_output(   NoahmpIO%CMCR_URB2D  ,    "CMCR_URB2D"   , "" , "" )
+                  call add_to_output(    NoahmpIO%TGR_URB2D  ,     "TGR_URB2D"   , "" , "" )
+                  call add_to_output(   NoahmpIO%TGRL_URB3D  ,    "TGRL_URB3D"   , "" , "" , "SOIL" )
+                  call add_to_output(    NoahmpIO%SMR_URB3D  ,     "SMR_URB3D"   , "" , "" , "SOIL" )
+                  call add_to_output(  NoahmpIO%DRELR_URB2D  ,   "DRELR_URB2D"   , "" , "" )
+                  call add_to_output(  NoahmpIO%DRELB_URB2D  ,   "DRELB_URB2D"   , "" , "" )
+                  call add_to_output(  NoahmpIO%DRELG_URB2D  ,   "DRELG_URB2D"   , "" , "" )
+                  call add_to_output(NoahmpIO%FLXHUMR_URB2D  , "FLXHUMR_URB2D"   , "" , "" )
+                  call add_to_output(NoahmpIO%FLXHUMB_URB2D  , "FLXHUMB_URB2D"   , "" , "" )
+                  call add_to_output(NoahmpIO%FLXHUMG_URB2D  , "FLXHUMG_URB2D"   , "" , "" )
                
+               endif
+
             endif
 
            enddo DEFINE_MODE_LOOP
