@@ -122,6 +122,7 @@ contains
     ! INOUT (with generic LSM equivalent) (as defined in WRF)
     if ( .not. allocated (NoahmpIO%T2)       ) allocate ( NoahmpIO%T2        (XSTART:XEND,        YSTART:YEND) ) ! 2m air temperature [K]            ! xue.lingbo 2024.05.28
     if ( .not. allocated (NoahmpIO%Q2)       ) allocate ( NoahmpIO%Q2        (XSTART:XEND,        YSTART:YEND) ) ! 2m humidity [kg kg-1]             ! xue.lingbo 2024.05.28
+    if ( .not. allocated (NoahmpIO%RH2)      ) allocate ( NoahmpIO%RH2       (XSTART:XEND,        YSTART:YEND) ) ! relative humidity                 ! xue.lingbo 2024.08.05
     if ( .not. allocated (NoahmpIO%TSK)      ) allocate ( NoahmpIO%TSK       (XSTART:XEND,        YSTART:YEND) ) ! surface radiative temperature [K]
     if ( .not. allocated (NoahmpIO%HFX)      ) allocate ( NoahmpIO%HFX       (XSTART:XEND,        YSTART:YEND) ) ! sensible heat flux [W m-2]
     if ( .not. allocated (NoahmpIO%QFX)      ) allocate ( NoahmpIO%QFX       (XSTART:XEND,        YSTART:YEND) ) ! latent heat flux [kg s-1 m-2]
@@ -502,6 +503,7 @@ contains
     NoahmpIO%QSFC            = undefined_real
     NoahmpIO%T2              = undefined_real                                         ! xue.lingbo 2024.05.28
     NoahmpIO%Q2              = undefined_real                                         ! xue.lingbo 2024.05.28
+    NoahmpIO%RH2             = undefined_real                                         ! xue.lingbo 2024.08.05
     NoahmpIO%TSK             = undefined_real
     NoahmpIO%QFX             = undefined_real
     NoahmpIO%SMSTAV          = undefined_real

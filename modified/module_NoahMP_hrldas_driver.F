@@ -1051,31 +1051,48 @@ contains
                             NoahmpIO%a_e_bep, NoahmpIO%b_u_bep, NoahmpIO%b_v_bep,                               & !O multi-layer urban
                             NoahmpIO%b_t_bep, NoahmpIO%b_q_bep, NoahmpIO%b_e_bep, NoahmpIO%dlg_bep,             & !O multi-layer urban
                             NoahmpIO%dl_u_bep, NoahmpIO%sf_bep, NoahmpIO%vl_bep)                                  !O multi-layer urban
-                       
-            ! add diagnostic output T2, Q2 for urban                 ! xue.lingbo 2024.06.25
-            IF(NoahmpIO%SF_URBAN_PHYSICS == 1) THEN
-               DO J=NoahmpIO%jts, NoahmpIO%jte                             
-                  DO I=NoahmpIO%its, NoahmpIO%ite                          
-                     IF( NoahmpIO%IVGTYP(I,J) == NoahmpIO%ISURBAN_TABLE .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_1_TABLE .or. &
-                         NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_2_TABLE   .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_3_TABLE .or. &
-                         NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_4_TABLE   .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_5_TABLE .or. &
-                         NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_6_TABLE   .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_7_TABLE .or. &
-                         NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_8_TABLE   .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_9_TABLE .or. &
-                         NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_10_TABLE  .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_11_TABLE ) THEN
-                        
-                        NoahmpIO%Q2(I,J)  = (NoahmpIO%FVEGXY(I,J)*NoahmpIO%Q2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%Q2MBXY(I,J))*(1.-NoahmpIO%FRC_URB2D(I,J)) +   &
-                                    NoahmpIO%Q2_URB2D(I,J)*NoahmpIO%FRC_URB2D(I,J)
-                        NoahmpIO%T2(I,J)  = (NoahmpIO%FVEGXY(I,J)*NoahmpIO%T2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%T2MBXY(I,J))*(1.-NoahmpIO%FRC_URB2D(I,J)) +   &
-                                    (NoahmpIO%TH2_URB2D(i,j)/((1.E5/NoahmpIO%FORCPLSM(i,j))**rcp))*NoahmpIO%FRC_URB2D(I,J) 
-                     ELSE
-                        NoahmpIO%Q2(I,J)  = NoahmpIO%FVEGXY(I,J)*NoahmpIO%Q2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%Q2MBXY(I,J)
-                        NoahmpIO%T2(I,J)  = NoahmpIO%FVEGXY(I,J)*NoahmpIO%T2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%T2MBXY(I,J) 
-                     END IF                                      
-                  ENDDO                                            
-               ENDDO                                                
-            ENDIF
 
-         ENDIF 
+         ENDIF
+
+         ! add diagnostic output T2, Q2                 ! xue.lingbo 2024.06.25
+         PRINT *, 'Checking SF_URBAN_PHYSICS:', NoahmpIO%SF_URBAN_PHYSICS
+         IF(NoahmpIO%SF_URBAN_PHYSICS == 1) THEN
+            DO J=NoahmpIO%jts, NoahmpIO%jte                             
+               DO I=NoahmpIO%its, NoahmpIO%ite                          
+                  IF( NoahmpIO%IVGTYP(I,J) == NoahmpIO%ISURBAN_TABLE .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_1_TABLE .or. &
+                        NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_2_TABLE   .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_3_TABLE .or. &
+                        NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_4_TABLE   .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_5_TABLE .or. &
+                        NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_6_TABLE   .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_7_TABLE .or. &
+                        NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_8_TABLE   .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_9_TABLE .or. &
+                        NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_10_TABLE  .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_11_TABLE ) THEN
+                     
+                     NoahmpIO%Q2(I,J)  = (NoahmpIO%FVEGXY(I,J)*NoahmpIO%Q2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%Q2MBXY(I,J))*(1.-NoahmpIO%FRC_URB2D(I,J)) +   &
+                                 NoahmpIO%Q2_URB2D(I,J)*NoahmpIO%FRC_URB2D(I,J)
+                     NoahmpIO%T2(I,J)  = (NoahmpIO%FVEGXY(I,J)*NoahmpIO%T2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%T2MBXY(I,J))*(1.-NoahmpIO%FRC_URB2D(I,J)) +   &
+                                 (NoahmpIO%TH2_URB2D(I,J)/((1.E5/NoahmpIO%FORCPLSM(I,J))**rcp))*NoahmpIO%FRC_URB2D(I,J) 
+                  ELSE
+
+                     NoahmpIO%Q2(I,J)  = NoahmpIO%FVEGXY(I,J)*NoahmpIO%Q2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%Q2MBXY(I,J)
+                     NoahmpIO%T2(I,J)  = NoahmpIO%FVEGXY(I,J)*NoahmpIO%T2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%T2MBXY(I,J) 
+
+                  END IF
+                  ! add diagnostic output RH           ! xue.lingbo 2024.08.05
+                  call DCOMPUTERH(NoahmpIO%Q2(I,J), NoahmpIO%FORCPLSM(I,J), NoahmpIO%T2(I,J), NoahmpIO%RH2(I,J))
+
+               ENDDO                                            
+            ENDDO   
+         ELSEIF(NoahmpIO%SF_URBAN_PHYSICS == 0) THEN
+            DO J=NoahmpIO%jts, NoahmpIO%jte                             
+               DO I=NoahmpIO%its, NoahmpIO%ite      
+
+                  NoahmpIO%Q2(I,J)  = NoahmpIO%FVEGXY(I,J)*NoahmpIO%Q2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%Q2MBXY(I,J)
+                  NoahmpIO%T2(I,J)  = NoahmpIO%FVEGXY(I,J)*NoahmpIO%T2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%T2MBXY(I,J) 
+                  ! add diagnostic output RH           ! xue.lingbo 2024.08.05
+                  call DCOMPUTERH(NoahmpIO%Q2(I,J), NoahmpIO%FORCPLSM(I,J), NoahmpIO%T2(I,J), NoahmpIO%RH2(I,J))
+
+               ENDDO                                            
+            ENDDO                                          
+         ENDIF
 
          if ( NoahmpIO%IOPT_RUNSUB == 5 ) then
             if ( mod(ITIME,NoahmpIO%STEPWTD) == 0 ) then
@@ -1129,6 +1146,12 @@ contains
               call set_output_define_mode(imode)
 
               ! For 3D arrays, we need to know whether the Z dimension is snow layers, or soil layers.
+
+            ! diagnostic  ! xue.lingbo 2024.08.05
+              call add_to_output(NoahmpIO%T2         , "T2"      , ""                                     , ""                      )
+              call add_to_output(NoahmpIO%Q2         , "Q2"      , ""                                     , ""                      )
+              call add_to_output(NoahmpIO%RH2        , "RH2"     , ""                                     , ""                      )
+              call add_to_output(NoahmpIO%TSK        , "TSK"     , ""                                     , ""                      )
 
             ! Properties - Assigned or predicted
               call add_to_output(NoahmpIO%IVGTYP     , "IVGTYP"  , "Dominant vegetation category"         , "category"              )
@@ -1324,10 +1347,6 @@ contains
                   call add_to_output(NoahmpIO%TH2_URB2D   ,     "TH2_URB2D"  , "" , "" )
                   call add_to_output(NoahmpIO%Q2_URB2D    ,      "Q2_URB2D"  , "" , "" )
 
-                  call add_to_output(NoahmpIO%T2          ,            "T2"  , "" , "" )
-                  call add_to_output(NoahmpIO%Q2          ,            "Q2"  , "" , "" )
-                  call add_to_output(NoahmpIO%TSK         ,           "TSK"  , "" , "" )
-
                   call add_to_output(    NoahmpIO%CMR_SFCDIF ,     "CMR_SFCDIF"  , "" , "" )
                   call add_to_output(    NoahmpIO%CHR_SFCDIF ,     "CHR_SFCDIF"  , "" , "" )
                   call add_to_output(    NoahmpIO%CMC_SFCDIF ,     "CMC_SFCDIF"  , "" , "" )
@@ -1425,6 +1444,52 @@ contains
                             NoahmpIO%sfcheadrt,NoahmpIO%soldrain,NoahmpIO%qtiledrain,                 &
                             NoahmpIO%ZWATBLE2D,NoahmpIO%ix,NoahmpIO%jx,NoahmpIO%NSOIL) 
 #endif
+
+
+! diagnostic output RH             ! xue.lingbo 2024.08.05
+! from wrf-python: https://github.com/NCAR/wrf-python/blob/a9c31706ab8de654d66973614e843f4ef9405480/fortran/wrf_user.f90#L703
+! internal subroutine dcomputerh(qv, p, t, rh)
+CONTAINS
+
+   SUBROUTINE DCOMPUTERH(qv, p, t, rh)
+
+      IMPLICIT NONE
+
+      ! Constants
+      ! hpa
+      REAL(KIND=8), PARAMETER :: EZERO = 6.112D0
+      REAL(KIND=8), PARAMETER :: ESLCON1 = 17.67D0
+      REAL(KIND=8), PARAMETER :: ESLCON2 = 29.65D0
+      REAL(KIND=8), PARAMETER :: EPS = 0.622D0
+      ! J/kg/K
+      REAL(KIND=8), PARAMETER :: RD = 287.D0
+      REAL(KIND=8), PARAMETER :: RV = 461.6D0
+      REAL(KIND=8), PARAMETER :: CELKEL = 273.15D0
+
+      ! Inputs and Outputs
+      REAL(KIND=4), INTENT(IN) :: qv, p, t
+      REAL(KIND=4), INTENT(OUT) :: rh
+
+      ! Local variables
+      REAL(KIND=8) :: qvs,es,pressure,temperature
+      
+      pressure = p
+      temperature = t
+
+      ! Compute saturation vapor pressure (es)
+      ! es  = 1000.*svp1*
+      es = EZERO*EXP(ESLCON1*(temperature - CELKEL)/(temperature - ESLCON2))
+
+      ! Compute saturation specific humidity (qvs)
+      ! qvs = ep_2*es/(pressure-es)
+      qvs = EPS*es/(0.01D0*pressure - (1.D0 - EPS)*es)
+
+      ! Compute relative humidity (rh)
+      rh = 100.D0*MAX(MIN(qv/qvs, 1.0D0), 0.0D0)
+      
+      RETURN
+
+   END SUBROUTINE DCOMPUTERH
 
 end subroutine land_driver_exe
 

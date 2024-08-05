@@ -160,6 +160,7 @@ module NoahmpIOVarType
     ! INOUT (with generic LSM equivalent) (as defined in WRF)
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  T2                  ! 2m air temperature [K]                         ! xue.lingbo 2024.05.28
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  Q2                  ! 2m humidity [kg kg-1]                          ! xue.lingbo 2024.05.28
+    real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  RH2                 ! relative humidity                              ! xue.lingbo 2024.08.05
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  TSK                 ! surface radiative temperature [K]
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  HFX                 ! sensible heat flux [W m-2]
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  QFX                 ! latent heat flux [kg s-1 m-2]
