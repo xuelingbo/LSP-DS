@@ -1,3 +1,33 @@
+[![DOI](https://zenodo.org/badge/806566110.svg)](https://zenodo.org/doi/10.5281/zenodo.13291568)
+
+# Download the LSP-DS code
+
+To download the LSP-DS code, use the following command:
+
+git clone --recurse-submodules https://github.com/xuelingbo/LSP-DS
+
+If the "--recurse-submodules" is not specified, the HRLDAS/Noah-MP source code will not be downloaded.
+
+HRLDAS model website: https://ral.ucar.edu/solutions/products/high-resolution-land-data-assimilation-system-hrldas
+
+Noah-MP model GitHub repository: https://github.com/NCAR/noahmp
+
+# Modify the Source Code
+
+To modify the original HRLDAS/Noah-MP code, please use the following command:
+
+`./modify.sh`
+
+This command will copy the modified files and cover the original one.
+
+# Compile HRLDAS
+
+Please follow `hrldas_manual.ipynb` to install the necessary libraries and compile the HRLDAS.
+
+ # Run HRLDAS
+
+A script for using ERA5 data as forcing is provided in `/ERA5_forced/run_HRLDAS_era5.py`. The necessary `geo_em file`, `namelist.hrldas`, and `URBPARM.TBL` are available in `/test/ERA5/`. After running the script, the output files will be generated in `/test/ERA5/LDASOUT`.
+
 # Land-Surface-Physics-Based Downscaling Approach (LSP-DS)
 
 This is the offical LSP-DS Github repository for code downloading and contribution.
@@ -43,34 +73,3 @@ Technical documentation freely available at http://dx.doi.org/10.5065/ew8g-yr95
 **Noah-MP version 5.0 model description paper**:  He, C., Valayamkunnath, P., Barlage, M., Chen, F., Gochis, D., Cabell, R., Schneider, T., Rasmussen, R., Niu, G.-Y., Yang, Z.-L., Niyogi, D., and Ek, M.: Modernizing the open-source community Noah with multi-parameterization options (Noah-MP) land surface model (version 5.0) with enhanced modularity, interoperability, and applicability, Geosci. Model Dev., 16, 5131–5151, https://doi.org/10.5194/gmd-16-5131-2023, 2023.
 
 **Noah-MP development future priority paper**: He, C., Chen, F., Barlage, M., Yang, Z.-L., Wegiel, J. W., Niu, G.-Y., Gochis, D., Mocko, D. M., Abolafia-Rosenzweig, R., Zhang, Z., Lin, T.-S., Valayamkunnath, P., Ek, M., and Niyogi, D. (2023): Enhancing the community Noah-MP land model capabilities for Earth sciences and applications, Bull. Amer. Meteor. Soc., E2023–E2029, https://doi.org/10.1175/BAMS-D-23-0249.1
-
-# Download the LSP-DS code
-
-To download the LSP-DS code, use the following command:
-
-git clone --recurse-submodules https://github.com/xuelingbo/LSP-DS
-
-If the "--recurse-submodules" is not specified, the HRLDAS/Noah-MP source code will not be downloaded.
-
-HRLDAS model website: https://ral.ucar.edu/solutions/products/high-resolution-land-data-assimilation-system-hrldas
-
-Noah-MP model GitHub repository: https://github.com/NCAR/noahmp
-
-# Modify the Source Code
-
-To modify the original HRLDAS/Noah-MP code, please use the following command:
-
-`./modify.sh`
-
-This command will copy the modified files and cover the original one.
-
-# Compile HRLDAS
-
-Please follow `hrldas_manual.ipynb` to install the necessary libraries and compile the HRLDAS.
-
- # Run HRLDAS
-
-A script for using ERA5 data as forcing is provided in `/ERA5_forced/run_HRLDAS_era5.py`. The necessary `geo_em file`, `namelist.hrldas`, and `URBPARM.TBL` are available in `/test/ERA5/`. After running the script, the output files will be generated in `/test/ERA5/LDASOUT`.
-
-
-
