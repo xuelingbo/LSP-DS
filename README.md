@@ -68,25 +68,9 @@ This command will copy the modified files and cover the original one.
 
 Please follow `hrldas_manual.ipynb` to install the necessary libraries and compile the HRLDAS.
 
-# Download ERA5 Data
-
-To download the ERA5 data, please modify as your need and run the script:
-
- `python download_era5_hrldas.py`
-
- # Create Forcing
-
- To create forcing from ERA5 data, please modify as your need and run the script:
-
- `python create_forcing.py`
-
  # Run HRLDAS
 
-To run hrldas, please use the following command:
-
-`cd hrldas/hrldas/run/`
-
-`./hrldas.exe`
+A script for using ERA5 data as forcing is provided in `/ERA5_forced/run_HRLDAS_era5.py`. The necessary `geo_em file`, `namelist.hrldas`, and `URBPARM.TBL` are available in `/test/ERA5/`. After running the script, the output files will be generated in `/test/ERA5/LDASOUT`.
 
 
 

@@ -12,10 +12,10 @@ import pandas as pd
 import xarray as xr
 import mpl_toolkits.basemap
 
-def create_LDASIN_files(start_date, end_date, raw_data_dir, geo_em_file, levelist, ZLVL):
+def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_file, levelist, ZLVL):
     
-    # if not os.path.exists(output_data_dir+"/LDASIN"):
-    #     os.makedirs(output_data_dir+"/LDASIN")
+    if not os.path.exists(output_dir+"/LDASIN"):
+        os.makedirs(output_dir+"/LDASIN")
     
     variables ={'t': {'name':'T2D', 'attrs':{'units':'K'}}, 
                 'q': {'name':'Q2D', 'attrs':{'units':'kg/kg'}},
@@ -42,49 +42,43 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, geo_em_file, levelis
             for var in variables:
                 
                 if variables[var]['name'] in ['LWDOWN', 'SWDOWN']: 
-                    filename = raw_data_dir+date.strftime('%Y%m')+'_'+var+'_era5_land_da.nc'
-                    raw_data_file = xr.open_dataset(filename)
-                    data_var_raw = raw_data_file[var].sel(latitude=slice(geo_lat.max(), geo_lat.min()), \
-                                                      longitude=slice(geo_lon.min(), geo_lon.max())).sel(time=time, method='nearest')
-                    raw_lat, raw_lon = data_var_raw.latitude.values[::-1], data_var_raw.longitude.values
-                    data_var = data_var_raw.rio.write_crs("epsg:4326",inplace=True).rio.interpolate_na()[::-1].values / 3600
-
-                elif variables[var]['name'] in ['RAINRATE']: 
-                    filename = raw_data_dir+date.strftime('%Y%m')+'_'+var+'_era5_land_da.nc'
-                    raw_data_file = xr.open_dataset(filename)
-                    data_var_raw = raw_data_file[var].sel(latitude=slice(geo_lat.max(), geo_lat.min()), \
-                                                      longitude=slice(geo_lon.min(), geo_lon.max())).sel(time=time, method='nearest')
-                    raw_lat, raw_lon = data_var_raw.latitude.values[::-1], data_var_raw.longitude.values
-                    data_var = data_var_raw.rio.write_crs("epsg:4326",inplace=True).rio.interpolate_na()[::-1].values / 3600 * 1000
-
-                elif variables[var]['name'] in ['PSFC']:
-                    filename = raw_data_dir+date.strftime('%Y%m')+'_'+var+'_era5_land.nc'
-                    raw_data_file = xr.open_dataset(filename)
-                    data_var_raw = raw_data_file[var].sel(latitude=slice(geo_lat.max(), geo_lat.min()), \
-                                                      longitude=slice(geo_lon.min(), geo_lon.max())).sel(time=time, method='nearest')
-                    raw_lat, raw_lon = data_var_raw.latitude.values[::-1], data_var_raw.longitude.values
-                    data_var = data_var_raw.rio.write_crs("epsg:4326",inplace=True).rio.interpolate_na()[::-1].values
-
-                elif variables[var]['name'] in ['T2D']:
-                    filename = raw_data_dir+date.strftime('%Y%m')+'_'+var+'_'+levelist+'_era5.nc'
+                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_ssrd_strd_sp_tp_era5_single_layer.nc")
                     raw_data_file = xr.open_dataset(filename)
                     raw_lat, raw_lon = raw_data_file.latitude.values[::-1], raw_data_file.longitude.values
-                    data_var = raw_data_file[var].sel(time=time, method='nearest')
+                    data_var = raw_data_file[var].sel(valid_time=time, method='nearest')[::-1].values / 3600
+
+                elif variables[var]['name'] in ['RAINRATE']: 
+                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_ssrd_strd_sp_tp_era5_single_layer.nc")
+                    raw_data_file = xr.open_dataset(filename)
+                    raw_lat, raw_lon = raw_data_file.latitude.values[::-1], raw_data_file.longitude.values
+                    data_var = raw_data_file[var].sel(valid_time=time, method='nearest')[::-1].values / 3600 * 1000
+
+                elif variables[var]['name'] in ['PSFC']:
+                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_ssrd_strd_sp_tp_era5_single_layer.nc")
+                    raw_data_file = xr.open_dataset(filename)
+                    raw_lat, raw_lon = raw_data_file.latitude.values[::-1], raw_data_file.longitude.values
+                    data_var = raw_data_file[var].sel(valid_time=time, method='nearest')[::-1].values
+
+                elif variables[var]['name'] in ['T2D']:
+                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_t_u_v_q_{levelist}_era5_model_level.nc")
+                    raw_data_file = xr.open_dataset(filename)
+                    raw_lat, raw_lon = raw_data_file.latitude.values[::-1], raw_data_file.longitude.values
+                    data_var = raw_data_file[var].sel(valid_time=time, model_level=levelist, method='nearest')
                     data_var_correct_to_msl = (data_var - ( -0.0065 * z_file.sel(hybrid=levelist)['z'].values / 9.80665 ))[::-1].values
                 
                 elif variables[var]['name'] in ['LAI', 'VEGFRA']:
                     if date.is_leap_year:
-                        raw_data_file = xr.open_dataset(var+'_leap.nc')
+                        raw_data_file = xr.open_dataset(os.path.join(output_dir,'LDASIN', f'{var}_leap.nc'))
                         data_var = [raw_data_file[var].sel(date='2020'+str(date.date())[-6:]).values]
                     else:
-                        raw_data_file = xr.open_dataset(var+'.nc')
+                        raw_data_file = xr.open_dataset(output_dir,'LDASIN', f'{var}.nc')
                         data_var = [raw_data_file[var].sel(date='2021'+str(date.date())[-6:]).values]
 
                 else:
-                    filename = raw_data_dir+date.strftime('%Y%m')+'_'+var+'_'+levelist+'_era5.nc'
+                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_t_u_v_q_{levelist}_era5_model_level.nc")
                     raw_data_file = xr.open_dataset(filename)
                     raw_lat, raw_lon = raw_data_file.latitude.values[::-1], raw_data_file.longitude.values
-                    data_var = raw_data_file[var].sel(time=time, method='nearest')[::-1].values
+                    data_var = raw_data_file[var].sel(valid_time=time, model_level=levelist, method='nearest')[::-1].values
 
                 if variables[var]['name'] in ['T2D']:
                     data_var_interpolated = mpl_toolkits.basemap.interp(data_var_correct_to_msl, 
@@ -106,13 +100,14 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, geo_em_file, levelis
                     LDASIN_file[variables[var]['name']].attrs['units'] = variables[var]['attrs']['units']
 
             encoding=[{var: {'_FillValue': None}} for var in LDASIN_file.variables]    
-            LDASIN_file.to_netcdf(time.strftime('%Y%m%d%H')+'.LDASIN_DOMAIN'+geo_em_file[-4], encoding=encoding[0])
-            print(time.strftime('%Y%m%d%H')+'.LDASIN_DOMAIN'+geo_em_file[-4])
+            output_filename = f"{time.strftime('%Y%m%d%H')}.LDASIN_DOMAIN{geo_em_file[-4]}"
+            LDASIN_file.to_netcdf(os.path.join(output_dir, 'LDASIN', output_filename), encoding=encoding[0])
+            print(output_filename)
                         
-def create_setup_file(start_date, raw_data_dir, geo_em_file):
+def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file):
     
-    # if not os.path.exists(output_data_dir+"/LDASIN"):
-    #     os.makedirs(output_data_dir+"/LDASIN")
+    if not os.path.exists(output_dir+"/LDASIN"):
+        os.makedirs(output_dir+"/LDASIN")
 
     variables = {
     
@@ -155,15 +150,15 @@ def create_setup_file(start_date, raw_data_dir, geo_em_file):
     issoilwater = int(geo_em.attrs['ISOILWATER'])
 
     if pd.Timestamp(start_date).is_leap_year:
-        LAI = xr.open_dataset('LAI12M_leap.nc')
+        LAI = xr.open_dataset(os.path.join(output_dir, 'LDASIN', 'LAI12M_leap.nc'))
     else:
-        LAI = xr.open_dataset('LAI12M.nc')
+        LAI = xr.open_dataset(os.path.join(output_dir, 'LDASIN', 'LAI12M.nc'))
 
     # get skin temperature, soil temperature, soil moisture and snow depth from raw data files
     # raw_data_file = xr.open_dataset(raw_data_dir+'/'+pd.to_datetime(start_date).strftime('%Y')
     #                                     +'/ERA5-'+pd.to_datetime(start_date).strftime('%Y%m%d')+'-sl.nc')
 
-    raw_data_file = xr.open_dataset(raw_data_dir+'/'+pd.to_datetime(start_date).strftime('%Y%m%d')+'00_setup.nc')
+    raw_data_file = xr.open_dataset(os.path.join(raw_data_dir, pd.to_datetime(start_date).strftime('%Y%m%d')+'00_setup.nc'))
     data_var_raw = raw_data_file.sel(latitude=slice(geo_lat.max(), geo_lat.min()), \
                                           longitude=slice(geo_lon.min(), geo_lon.max()))
     raw_lat, raw_lon = data_var_raw.latitude.values[::-1], data_var_raw.longitude.values
@@ -237,7 +232,6 @@ def create_setup_file(start_date, raw_data_dir, geo_em_file):
         
         elif var == 'ISLTYP':
             dominant_index = geo_em['SOILCTOP'].argmax(dim='soil_cat') + 1
-            # dominant_index = np.where(dominant_index==1,9,dominant_index)# calibration for Kanto area
             dominant_value = geo_em['SOILCTOP'].max(dim='soil_cat')
             dominant_index_corrected = xr.where(dominant_value<0.01, 8, dominant_index)
             data_var = xr.where(setup_file['XLAND']==2, issoilwater, dominant_index_corrected)
@@ -283,12 +277,15 @@ def create_setup_file(start_date, raw_data_dir, geo_em_file):
     setup_file = setup_file.fillna({'SNOW': -999})
 
     setup_file.attrs = geo_em.attrs
-    
-    setup_file.to_netcdf('./HRLDAS_setup_'
-                         +pd.to_datetime(start_date).strftime('%Y%m%d')+'00_d'
-                         +geo_em_file[-4])
 
-def create_lai_vegfra(geo_em_file):
+    output_filename = f"HRLDAS_setup_{pd.to_datetime(start_date).strftime('%Y%m%d')}00_d{geo_em_file[-4]}"
+    
+    setup_file.to_netcdf(os.path.join(output_dir, 'LDASIN', output_filename))
+
+def create_lai_vegfra(geo_em_file, output_dir):
+
+    if not os.path.exists(output_dir+"/LDASIN"):
+        os.makedirs(output_dir+"/LDASIN")
 
     for var in ('LAI12M', 'GREENFRAC'):
 
@@ -316,31 +313,35 @@ def create_lai_vegfra(geo_em_file):
         LAI[var] = xr.where(mask, 0, LAI[var])
 
         if var=='LAI12M':
-            LAI.sel(date=slice('2020-01-01','2020-12-31')).to_netcdf('LAI12M_leap.nc')
-            LAI.sel(date=slice('2021-01-01','2021-12-31')).to_netcdf('LAI12M.nc')
+            LAI.sel(date=slice('2020-01-01','2020-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', 'LAI12M_leap.nc'))
+            LAI.sel(date=slice('2021-01-01','2021-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', 'LAI12M.nc'))
         else:
-            LAI.sel(date=slice('2020-01-01','2020-12-31')).to_netcdf('GREENFRAC_leap.nc')
-            LAI.sel(date=slice('2021-01-01','2021-12-31')).to_netcdf('GREENFRAC.nc')
+            LAI.sel(date=slice('2020-01-01','2020-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', 'GREENFRAC_leap.nc'))
+            LAI.sel(date=slice('2021-01-01','2021-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', 'GREENFRAC.nc'))
 
 
 if __name__ == '__main__':
 
-    start_year = 2011
+    start_year = 2020
     end_year = 2020
-    loop_start_date = '10-27'
-    loop_end_date = '11-30'
-    raw_data_dir = "/nas/"
-    geo_em_file = "../geo/geo_em.d02.nc"
+    loop_start_date = '08-01'
+    loop_end_date = '08-02'
+    raw_data_dir = '../test/ERA5/raw/'
+    output_dir = '../test/ERA5/'
+    geo_em_file = '../test/ERA5/geo/geo_em.d02.nc'
     levelist = '136'
     ZLVL = 30
 
-    create_lai_vegfra(geo_em_file)
+    create_lai_vegfra(geo_em_file, output_dir)
 
     for year in range(start_year, end_year+1):
 
-        create_LDASIN_files(str(year)+'-'+loop_start_date, str(year)+'-'+loop_end_date, \
-                            raw_data_dir, \
-                            geo_em_file, levelist, ZLVL)
-        create_setup_file(str(year)+'-'+loop_start_date, \
-                          raw_data_dir, \
+        create_setup_file(f'{str(year)}-{loop_start_date}', \
+                          raw_data_dir, output_dir, \
                           geo_em_file)
+
+        create_LDASIN_files(f'{str(year)}-{loop_start_date}', f'{str(year)}-{loop_end_date}', \
+                            raw_data_dir, output_dir, \
+                            geo_em_file, levelist, ZLVL)
+        
+        
