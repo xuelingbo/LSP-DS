@@ -1,4 +1,11 @@
 [![DOI](https://zenodo.org/badge/806566110.svg)](https://zenodo.org/doi/10.5281/zenodo.13291568)
+# Land-Surface-Physics-Based Downscaling Approach (LSP-DS)
+
+This is the offical LSP-DS Github repository for code downloading and contribution.
+
+## LSP-DS reference papers
+
+**LSP-DS reference paper**: Xue, L., Doan, Q.‐V., Kusaka, H., He, C., & Chen, F. (2024). Insights into urban heat island and heat waves synergies revealed by a Land‐Surface‐Physics‐Based Downscaling method. Journal of Geophysical Research: Atmospheres, 129, e2023JD040531. https://doi.org/10.1029/ 2023JD040531
 
 # Download the LSP-DS code
 
@@ -27,14 +34,6 @@ Please follow `hrldas_manual.ipynb` to install the necessary libraries and compi
  # Run HRLDAS
 
 A script for using ERA5 data as forcing is provided in `/ERA5_forced/run_HRLDAS_era5.py`. The necessary `geo_em file`, `namelist.hrldas`, and `URBPARM.TBL` are available in `/test/ERA5/`. After running the script, the output files will be generated in `/test/ERA5/LDASOUT`.
-
-# Land-Surface-Physics-Based Downscaling Approach (LSP-DS)
-
-This is the offical LSP-DS Github repository for code downloading and contribution.
-
-## LSP-DS reference papers
-
-**LSP-DS reference paper**: Xue, L., Doan, Q.‐V., Kusaka, H., He, C., & Chen, F. (2024). Insights into urban heat island and heat waves synergies revealed by a Land‐Surface‐Physics‐Based Downscaling method. Journal of Geophysical Research: Atmospheres, 129, e2023JD040531. https://doi.org/10.1029/ 2023JD040531
 
 # HRLDAS (High Resolution Land Data Assimilation System) 
 The High-Resolution Land Data Assimilation System (HRLDAS) is a widely-used open-source offline community framework/driver of land surface models (LSMs). HRLDAS uses a combination of observed and analyzed meterological forcing (precipitation, shortwave and longwave radiation, surface wind, specific humidity, temperature, surface pressure) to drive a LSM to simulate the evolution of land surface states. The system has been developed to leverage the WRF pre-processed input data (e.g., WPS geo_em* file) and conduct computationally-efficient model run to generate more accurate initial land state conditions and/or produce the offline LSM simulations alone for scientific studies.
