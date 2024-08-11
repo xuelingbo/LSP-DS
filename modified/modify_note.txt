@@ -1,6 +1,6 @@
 2024.05.28 add urban variables outputs
 2024.06.25 add diagnostic output T2, Q2
-2024.08.05 add diagnostic output Q2
+2024.08.05 add diagnostic output RH2
 2024.08.11 TRAD averaged with TRAD_URB2D (added)
            when sf_urban_physics == 2, 3; TRAD == TSK
            when sf_urban_physics ==1;     TRAD = Weighted average of TRAD_nonUrban and TRAD_Urban
