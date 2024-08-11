@@ -435,6 +435,7 @@ contains
           call get_from_restart(xstart, xend, xstart, ixfull, jxfull,       "G_URB2D"  ,      NoahmpIO%G_URB2D  )
           call get_from_restart(xstart, xend, xstart, ixfull, jxfull,      "RN_URB2D"  ,     NoahmpIO%RN_URB2D  )
           call get_from_restart(xstart, xend, xstart, ixfull, jxfull,      "TS_URB2D"  ,     NoahmpIO%TS_URB2D  )
+          call get_from_restart(xstart, xend, xstart, ixfull, jxfull,    "TRAD_URB2D"  ,   NoahmpIO%TRAD_URB2D  )  ! xue.lingbo 2024.08.11
           call get_from_restart(xstart, xend, xstart, ixfull, jxfull,     "FRC_URB2D"  ,    NoahmpIO%FRC_URB2D  )
           call get_from_restart(xstart, xend, xstart, ixfull, jxfull,   "UTYPE_URB2D"  ,  NoahmpIO%UTYPE_URB2D  )
           call get_from_restart(xstart, xend, xstart, ixfull, jxfull,      "LP_URB2D"  ,     NoahmpIO%LP_URB2D  )
@@ -543,7 +544,8 @@ contains
                               NoahmpIO%XXXR_URB2D, NoahmpIO%XXXB_URB2D, NoahmpIO%XXXG_URB2D, NoahmpIO%XXXC_URB2D,           & !urban
                               NoahmpIO%TR_URB2D, NoahmpIO%TB_URB2D, NoahmpIO%TG_URB2D, NoahmpIO%TC_URB2D,NoahmpIO%QC_URB2D, & !urban
                               NoahmpIO%TRL_URB3D, NoahmpIO%TBL_URB3D, NoahmpIO%TGL_URB3D, NoahmpIO%SH_URB2D,                & !urban
-                              NoahmpIO%LH_URB2D, NoahmpIO%G_URB2D, NoahmpIO%RN_URB2D, NoahmpIO%TS_URB2D,                    & !urban
+                              NoahmpIO%LH_URB2D, NoahmpIO%G_URB2D, NoahmpIO%RN_URB2D,                                       & !urban
+                              NoahmpIO%TS_URB2D, NoahmpIO%TRAD_URB2D,                                                       & !urban   !xue.lingbo 2024.08.11
                               NoahmpIO%num_urban_ndm,  NoahmpIO%urban_map_zrd,  NoahmpIO%urban_map_zwd,                     & !urban
                               NoahmpIO%urban_map_gd,                                                                        & !I multi-layer urban
                               NoahmpIO%urban_map_zd,  NoahmpIO%urban_map_zdf, NoahmpIO%urban_map_bd,                        & !I multi-layer urban   
@@ -670,7 +672,8 @@ contains
                               NoahmpIO%XXXR_URB2D, NoahmpIO%XXXB_URB2D, NoahmpIO%XXXG_URB2D, NoahmpIO%XXXC_URB2D,          & !urban
                               NoahmpIO%TR_URB2D, NoahmpIO%TB_URB2D, NoahmpIO%TG_URB2D, NoahmpIO%TC_URB2D,NoahmpIO%QC_URB2D,& !urban
                               NoahmpIO%TRL_URB3D, NoahmpIO%TBL_URB3D, NoahmpIO%TGL_URB3D, NoahmpIO%SH_URB2D,               & !urban
-                              NoahmpIO%LH_URB2D, NoahmpIO%G_URB2D, NoahmpIO%RN_URB2D, NoahmpIO%TS_URB2D,                   & !urban
+                              NoahmpIO%LH_URB2D, NoahmpIO%G_URB2D, NoahmpIO%RN_URB2D,                                      & !urban
+                              NoahmpIO%TS_URB2D, NoahmpIO%TRAD_URB2D,                                                      & !urban  ! xue.lingbo 2024/08/11
                               NoahmpIO%num_urban_ndm,  NoahmpIO%urban_map_zrd,  NoahmpIO%urban_map_zwd,                    & !urban
                               NoahmpIO%urban_map_gd,                                                                       & !I multi-layer urban
                               NoahmpIO%urban_map_zd,  NoahmpIO%urban_map_zdf, NoahmpIO%urban_map_bd,                       & !I multi-layer urban   
@@ -1000,7 +1003,8 @@ contains
                             NoahmpIO%T_PHY, NoahmpIO%QV_CURR, NoahmpIO%U_PHY, NoahmpIO%V_PHY, NoahmpIO%SWDOWN,  & ! IN : Forcing
                             NoahmpIO%SWDDIR, NoahmpIO%SWDDIF,                                                   &
                             NoahmpIO%GLW, NoahmpIO%P8W, NoahmpIO%RAINBL, NoahmpIO%DZ8W, NoahmpIO%ZNT,           & ! IN : Forcing
-                            NoahmpIO%TSK, NoahmpIO%HFX, NoahmpIO%QFX, NoahmpIO%LH, NoahmpIO%GRDFLX,             & ! IN/OUT : LSM 
+                            NoahmpIO%TSK, NoahmpIO%TRADXY,                                                      & ! IN/OUT : LSM    ! xue.lingbo 2024/08/11
+                            NoahmpIO%HFX, NoahmpIO%QFX, NoahmpIO%LH, NoahmpIO%GRDFLX,                           & ! IN/OUT : LSM 
                             NoahmpIO%ALBEDO, NoahmpIO%EMISS, NoahmpIO%QSFC,                                     & ! IN/OUT : LSM 
                             NoahmpIO%ids, NoahmpIO%ide, NoahmpIO%jds, NoahmpIO%jde, NoahmpIO%kds, NoahmpIO%kde, &
                             NoahmpIO%ims, NoahmpIO%ime, NoahmpIO%jms, NoahmpIO%jme, NoahmpIO%kms, NoahmpIO%kme, &
@@ -1012,7 +1016,8 @@ contains
                             NoahmpIO%xxxr_urb2d, NoahmpIO%xxxb_urb2d, NoahmpIO%xxxg_urb2d,                      & !H urban
                             NoahmpIO%xxxc_urb2d, NoahmpIO%trl_urb3d, NoahmpIO%tbl_urb3d, NoahmpIO%tgl_urb3d,    & !H urban
                             NoahmpIO%sh_urb2d, NoahmpIO%lh_urb2d, NoahmpIO%g_urb2d, NoahmpIO%rn_urb2d,          & !H urban
-                            NoahmpIO%ts_urb2d, NoahmpIO%psim_urb2d,                                             &
+                            NoahmpIO%ts_urb2d, NoahmpIO%trad_urb2d,                                             & !O urban          ! xue.lingbo 2024/08/11
+                            NoahmpIO%psim_urb2d,                                                                &
                             NoahmpIO%psih_urb2d, NoahmpIO%u10_urb2d, NoahmpIO%v10_urb2d,                        & !O urban
                             NoahmpIO%GZ1OZ0_urb2d, NoahmpIO%AKMS_URB2D,                                         & !O urban
                             NoahmpIO%th2_urb2d, NoahmpIO%q2_urb2d, NoahmpIO%ust_urb2d,                          & !O urban
@@ -1335,6 +1340,7 @@ contains
                call add_to_output(      NoahmpIO%G_URB2D  ,       "G_URB2D"  , "" , "" )
                call add_to_output(     NoahmpIO%RN_URB2D  ,      "RN_URB2D"  , "" , "" )
                call add_to_output(     NoahmpIO%TS_URB2D  ,      "TS_URB2D"  , "" , "" )
+               call add_to_output(   NoahmpIO%TRAD_URB2D  ,    "TRAD_URB2D"  , "" , "" )         ! xue.lingbo 2024.08.11
                call add_to_output(    NoahmpIO%FRC_URB2D  ,     "FRC_URB2D"  , "" , "" )
                call add_to_output(  NoahmpIO%UTYPE_URB2D  ,   "UTYPE_URB2D"  , "" , "" )
                call add_to_output(     NoahmpIO%LP_URB2D  ,      "LP_URB2D"  , "" , "" )
@@ -1600,6 +1606,7 @@ subroutine lsm_restart()
       call add_to_restart(      NoahmpIO%G_URB2D  ,       "G_URB2D" )
       call add_to_restart(     NoahmpIO%RN_URB2D  ,      "RN_URB2D" )
       call add_to_restart(     NoahmpIO%TS_URB2D  ,      "TS_URB2D" )
+      call add_to_restart(    NoahmpIO%trad_urb2d ,    "TRAD_URB2D" )                       ! xue.lingbo 2024.08.11
       call add_to_restart(    NoahmpIO%FRC_URB2D  ,     "FRC_URB2D" )
       call add_to_restart(  NoahmpIO%UTYPE_URB2D  ,   "UTYPE_URB2D" )
       call add_to_restart(     NoahmpIO%LP_URB2D  ,      "LP_URB2D" )

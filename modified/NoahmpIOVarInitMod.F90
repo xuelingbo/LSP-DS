@@ -335,6 +335,7 @@ contains
        if ( .not. allocated (NoahmpIO%g_urb2d)    ) allocate ( NoahmpIO%g_urb2d     (XSTART:XEND,YSTART:YEND) )
        if ( .not. allocated (NoahmpIO%rn_urb2d)   ) allocate ( NoahmpIO%rn_urb2d    (XSTART:XEND,YSTART:YEND) )
        if ( .not. allocated (NoahmpIO%ts_urb2d)   ) allocate ( NoahmpIO%ts_urb2d    (XSTART:XEND,YSTART:YEND) )
+       if ( .not. allocated (NoahmpIO%trad_urb2d) ) allocate ( NoahmpIO%trad_urb2d  (XSTART:XEND,YSTART:YEND) ) ! xue.lingbo 2024/08/11
        if ( .not. allocated (NoahmpIO%HRANG)      ) allocate ( NoahmpIO%HRANG       (XSTART:XEND,YSTART:YEND) )
        if ( .not. allocated (NoahmpIO%frc_urb2d)  ) allocate ( NoahmpIO%frc_urb2d   (XSTART:XEND,YSTART:YEND) )
        if ( .not. allocated (NoahmpIO%utype_urb2d)) allocate ( NoahmpIO%utype_urb2d (XSTART:XEND,YSTART:YEND) )
@@ -728,6 +729,7 @@ contains
        NoahmpIO%g_urb2d       = undefined_real_neg
        NoahmpIO%rn_urb2d      = undefined_real_neg
        NoahmpIO%ts_urb2d      = undefined_real_neg
+       NoahmpIO%trad_urb2d    = undefined_real_neg           ! xue.lingbo 2024.08.11
        NoahmpIO%GMT           = undefined_real_neg
        NoahmpIO%frc_urb2d     = undefined_real_neg
        NoahmpIO%lp_urb2d      = undefined_real_neg
