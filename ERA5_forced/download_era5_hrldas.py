@@ -70,7 +70,7 @@ def download_files_for_compute_geopotential(dir, area):
 # Download ERA5 single layer data for setup
 # Dataset: ERA5 hourly data on single levels from 1979 to present (reanalysis-era5-single-levels)
 # Variables: Skin temperature, Snow depth, Soil temperature level 1-4, Volumetric soil water layer 1-4
-def download_era5_single_layer_for_setup(year, month, day, dir):
+def download_era5_single_layer_for_setup(year, month, day, area, dir):
 
     output_filename = f'{str(year)}{month}{day}00_setup.nc'
     print(os.path.join(dir, output_filename))
@@ -194,7 +194,7 @@ if __name__ == '__main__':
     download_files_for_compute_geopotential(dir, area)
 
     # Download ERA5 single layer data for setup file
-    download_era5_single_layer_for_setup(start_year, months[0], '01', dir)
+    download_era5_single_layer_for_setup(start_year, months[0], '01', area, dir)
 
     # Download ERA5 single layer data for forcing
     download_era5_single_layer_ssrd_strd_sp_tp(start_year, end_year, months, area, dir)
