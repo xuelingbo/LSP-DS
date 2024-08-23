@@ -31,7 +31,7 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
     
     geo_em = xr.open_dataset(geo_em_file)
     geo_lat, geo_lon = geo_em.XLAT_M.values[0], geo_em.XLONG_M.values[0]
-    z_file = xr.open_dataset(raw_data_dir + 'z_out.grib')
+    z_file = xr.open_dataset(os.path.join(raw_data_dir, 'z_out.grib'))
     
     for date in pd.date_range(start_date, end_date, freq= 'D'):
         
@@ -71,7 +71,7 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
                         raw_data_file = xr.open_dataset(os.path.join(output_dir,'LDASIN', f'{var}_leap.nc'))
                         data_var = [raw_data_file[var].sel(date='2020'+str(date.date())[-6:]).values]
                     else:
-                        raw_data_file = xr.open_dataset(output_dir,'LDASIN', f'{var}.nc')
+                        raw_data_file = xr.open_dataset(os.path.join(output_dir,'LDASIN', f'{var}.nc'))
                         data_var = [raw_data_file[var].sel(date='2021'+str(date.date())[-6:]).values]
 
                 else:
