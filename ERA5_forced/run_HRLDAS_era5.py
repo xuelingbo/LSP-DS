@@ -29,7 +29,7 @@ ZLVL = 30
 download_files_for_compute_geopotential(dir_raw, area)
 
 # Download ERA5 single layer data for setup file
-download_era5_single_layer_for_setup(start_year, months[0], '01', dir_raw)
+download_era5_single_layer_for_setup(start_year, months[0], '01', area, dir_raw)
 
 # Download ERA5 single layer data for forcing
 download_era5_single_layer_ssrd_strd_sp_tp(start_year, end_year, months, area, dir_raw)
