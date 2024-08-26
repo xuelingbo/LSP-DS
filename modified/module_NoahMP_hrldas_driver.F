@@ -1074,7 +1074,8 @@ contains
                      NoahmpIO%Q2(I,J)  = (NoahmpIO%FVEGXY(I,J)*NoahmpIO%Q2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%Q2MBXY(I,J))*(1.-NoahmpIO%FRC_URB2D(I,J)) +   &
                                  NoahmpIO%Q2_URB2D(I,J)*NoahmpIO%FRC_URB2D(I,J)
                      NoahmpIO%T2(I,J)  = (NoahmpIO%FVEGXY(I,J)*NoahmpIO%T2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%T2MBXY(I,J))*(1.-NoahmpIO%FRC_URB2D(I,J)) +   &
-                                 (NoahmpIO%TH2_URB2D(I,J)/((1.E5/NoahmpIO%FORCPLSM(I,J))**rcp))*NoahmpIO%FRC_URB2D(I,J) 
+                                 ! (NoahmpIO%TH2_URB2D(I,J)/((1.E5/NoahmpIO%FORCPLSM(I,J))**rcp))*NoahmpIO%FRC_URB2D(I,J) ! TH2_URB2D is physical temperature, not potential temperature
+                                 NoahmpIO%TH2_URB2D(I,J)*NoahmpIO%FRC_URB2D(I,J) 
                   ELSE
 
                      NoahmpIO%Q2(I,J)  = NoahmpIO%FVEGXY(I,J)*NoahmpIO%Q2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%Q2MBXY(I,J)
