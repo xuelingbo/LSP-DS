@@ -3,11 +3,9 @@
 
 This is the offical LSP-DS Github repository for code downloading and contribution.
 
-## LSP-DS reference papers
+**LSP-DS description paper**: Xue, L., Doan, Q.‐V., Kusaka, H., He, C., & Chen, F. (2024). Insights into urban heat island and heat waves synergies revealed by a Land‐Surface‐Physics‐Based Downscaling method. Journal of Geophysical Research: Atmospheres, 129, e2023JD040531. https://doi.org/10.1029/ 2023JD040531
 
-**LSP-DS reference paper**: Xue, L., Doan, Q.‐V., Kusaka, H., He, C., & Chen, F. (2024). Insights into urban heat island and heat waves synergies revealed by a Land‐Surface‐Physics‐Based Downscaling method. Journal of Geophysical Research: Atmospheres, 129, e2023JD040531. https://doi.org/10.1029/ 2023JD040531
-
-# Download the LSP-DS code
+## 1. Download the LSP-DS code
 
 To download the LSP-DS code, use the following command:
 
@@ -19,21 +17,26 @@ HRLDAS model website: https://ral.ucar.edu/solutions/products/high-resolution-la
 
 Noah-MP model GitHub repository: https://github.com/NCAR/noahmp
 
-# Modify the Source Code
+## 2. Modify the Source Code
 
 To modify the original HRLDAS/Noah-MP code, please use the following command:
 
-`./modify.sh`
+[`./modify.sh`](https://github.com/xuelingbo/LSP-DS/blob/main/modify.sh)
 
 This command will copy the modified files and cover the original one.
 
-# Compile HRLDAS
+## 3. Compile HRLDAS
 
-Please follow `hrldas_manual.ipynb` to install the necessary libraries and compile the HRLDAS.
+Please follow [`hrldas_manual.ipynb`](https://github.com/xuelingbo/LSP-DS/blob/main/hrldas_manual.ipynb) to install the necessary libraries and compile the HRLDAS.
 
- # Run HRLDAS
+## 4. Run HRLDAS
 
-A script for using ERA5 data as forcing is provided in `/ERA5_forced/run_HRLDAS_era5.py`. The necessary `geo_em file`, `namelist.hrldas`, and `URBPARM.TBL` are available in `/test/ERA5/`. After running the script, the output files will be generated in `/test/ERA5/LDASOUT`.
+A script for using ERA5 data as forcing is provided here [`run_HRLDAS_era5.py`](https://github.com/xuelingbo/LSP-DS/blob/main/ERA5_forced/run_HRLDAS_era5.py). The necessary [`geo_em file`](https://github.com/xuelingbo/LSP-DS/blob/main/test/ERA5/geo/geo_em.d02.nc), [`namelist.hrldas`](https://github.com/xuelingbo/LSP-DS/blob/main/test/ERA5/namelists/namelist.hrldas), and [`URBPARM.TBL`](https://github.com/xuelingbo/LSP-DS/blob/main/test/ERA5/tables/URBPARM.TBL) are provided. After running the script, the output files will be generated in `/test/ERA5/LDASOUT`.
+
+## 5. Postprocessing
+
+A script for extracting data based on observational stations is provided in [`extract_data_based_on_stations.py`](https://github.com/xuelingbo/LSP-DS/blob/main/postprocessing_scripts/extract_data_based_on_stations.py). An example of the necessary staions information file is provided here [Amedas_list.csv](https://github.com/xuelingbo/LSP-DS/blob/main/test/ERA5/tables/Amedas_list.csv). After running the script, the output csv files will be generated in [`results/`](https://github.com/xuelingbo/LSP-DS/tree/main/test/ERA5/results).
+
 
 # HRLDAS (High Resolution Land Data Assimilation System) 
 The High-Resolution Land Data Assimilation System (HRLDAS) is a widely-used open-source offline community framework/driver of land surface models (LSMs). HRLDAS uses a combination of observed and analyzed meterological forcing (precipitation, shortwave and longwave radiation, surface wind, specific humidity, temperature, surface pressure) to drive a LSM to simulate the evolution of land surface states. The system has been developed to leverage the WRF pre-processed input data (e.g., WPS geo_em* file) and conduct computationally-efficient model run to generate more accurate initial land state conditions and/or produce the offline LSM simulations alone for scientific studies.
@@ -42,7 +45,7 @@ HRLDAS model website: [https://ral.ucar.edu/solutions/products/high-resolution-l
 
 HRLDAS Community Model Repository: [https://github.com/NCAR/hrldas](https://github.com/NCAR/hrldas)
 
-## HRLDAS/Noah-MP technical documentation and model description papers
+**HRLDAS/Noah-MP technical documentation and model description papers:**
 
 Technical documentation freely available at http://dx.doi.org/10.5065/ew8g-yr95
 
@@ -61,7 +64,7 @@ Noah-MP model website: https://ral.ucar.edu/solutions/products/noah-multiparamet
 
 Noah-MP Community Model Repository: https://github.com/NCAR/noahmp/blob/master/README.md
 
-## Noah-MP technical documentation and model description papers
+**Noah-MP technical documentation and model description papers:**
 
 Technical documentation freely available at http://dx.doi.org/10.5065/ew8g-yr95
 
