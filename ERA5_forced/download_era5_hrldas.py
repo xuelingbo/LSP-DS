@@ -185,7 +185,7 @@ if __name__ == '__main__':
 
     start_year = 2020
     end_year = 2020
-    months = ['08']
+    months = ['08']                          # For example, ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
     area = [55, 30, -50, 155]
     levelists = ['136']
     dir = '../test/ERA5/raw/'
@@ -194,7 +194,8 @@ if __name__ == '__main__':
     download_files_for_compute_geopotential(dir, area)
 
     # Download ERA5 single layer data for setup file
-    download_era5_single_layer_for_setup(start_year, months[0], '01', area, dir)
+    for year in range(start_year, end_year+1):
+        download_era5_single_layer_for_setup(start_year, months[0], '01', area, dir)
 
     # Download ERA5 single layer data for forcing
     download_era5_single_layer_ssrd_strd_sp_tp(start_year, end_year, months, area, dir)
