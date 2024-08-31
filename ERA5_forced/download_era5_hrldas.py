@@ -195,7 +195,7 @@ if __name__ == '__main__':
 
     # Download ERA5 single layer data for setup file
     for year in range(start_year, end_year+1):
-        download_era5_single_layer_for_setup(start_year, months[0], '01', area, dir)
+        download_era5_single_layer_for_setup(year, months[0], '01', area, dir)
 
     # Download ERA5 single layer data for forcing
     download_era5_single_layer_ssrd_strd_sp_tp(start_year, end_year, months, area, dir)
