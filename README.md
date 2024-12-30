@@ -3,7 +3,11 @@
 
 This is the offical LSP-DS Github repository for code downloading and contribution.
 
-**LSP-DS description paper**: Xue, L., Doan, Q.‐V., Kusaka, H., He, C., & Chen, F. (2024). Insights into urban heat island and heat waves synergies revealed by a Land‐Surface‐Physics‐Based Downscaling method. Journal of Geophysical Research: Atmospheres, 129, e2023JD040531. https://doi.org/10.1029/ 2023JD040531
+**LSP-DS description paper**: 
+
+Xue, L., Doan, Q.‐V., Kusaka, H., He, C., & Chen, F. (2024). Insights into urban heat island and heat waves synergies revealed by a Land‐Surface‐Physics‐Based Downscaling method. Journal of Geophysical Research: Atmospheres, 129, e2023JD040531. https://doi.org/10.1029/2023JD040531
+
+Xue, L., Doan, Q. V., Kusaka, H., He, C., & Chen, F. (2025). Land-surface-physics-based downscaling versus conventional dynamical downscaling for high-resolution urban climate change information: The case study of two cities. Urban Climate, 59, 102228. https://doi.org/10.1016/j.uclim.2024.102228
 
 ## 1. Download the LSP-DS code
 
