@@ -25,7 +25,7 @@ Noah-MP model GitHub repository: https://github.com/NCAR/noahmp
 
 To modify the original HRLDAS/Noah-MP code, please use the following command:
 
-[`./modify.sh`](https://github.com/xuelingbo/LSP-DS/blob/main/modify.sh)
+[`bash -x modify.sh`](https://github.com/xuelingbo/LSP-DS/blob/main/modify.sh)
 
 This command will copy the modified files and cover the original one.
 
