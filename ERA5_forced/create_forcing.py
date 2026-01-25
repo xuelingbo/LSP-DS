@@ -48,7 +48,7 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
             for var in variables:
                 
                 if variables[var]['name'] in ['LWDOWN', 'SWDOWN']: 
-                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_ssrd_strd_sp_tp_era5_single_layer.nc")
+                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_accum_ssrd_strd_tp_era5_single_layer.nc")
                     raw_data_file = xr.open_dataset(filename)
                     data_vars_raw = raw_data_file.sel(
                         latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5), 
@@ -57,7 +57,7 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
                     data_var = data_vars_raw[var].sel(valid_time=time, method='nearest')[::-1].values / 3600
 
                 elif variables[var]['name'] in ['RAINRATE']: 
-                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_ssrd_strd_sp_tp_era5_single_layer.nc")
+                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_accum_ssrd_strd_tp_era5_single_layer.nc")
                     raw_data_file = xr.open_dataset(filename)
                     data_vars_raw = raw_data_file.sel(
                         latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5), 
@@ -66,7 +66,7 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
                     data_var = data_vars_raw[var].sel(valid_time=time, method='nearest')[::-1].values / 3600 * 1000
 
                 elif variables[var]['name'] in ['PSFC']:
-                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_ssrd_strd_sp_tp_era5_single_layer.nc")
+                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_instant_sp_era5_single_layer.nc")
                     raw_data_file = xr.open_dataset(filename)
                     data_vars_raw = raw_data_file.sel(
                         latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5), 
@@ -343,12 +343,9 @@ if __name__ == '__main__':
     end_year = 2020
     loop_start_date = '08-01'
     loop_end_date = '08-02'
-    # raw_data_dir = '../hands-on/ERA5/YangtzeDelta/raw/'
-    # output_dir = '../hands-on/ERA5/YangtzeDelta/'
-    # geo_em_file = '../hands-on/ERA5/YangtzeDelta/geo/geo_em.d01.nc'
-    raw_data_dir = '../hands-on/ERA5/YangtzeDelta/raw/'
-    output_dir = '../hands-on/ERA5/Tokyo/'
-    geo_em_file = '../hands-on/ERA5/Tokyo/geo/geo_em.d02.nc'
+    raw_data_dir = '../hands-on/ERA5/YangtzeDelta/raw-test/'
+    output_dir = '../hands-on/ERA5/YangtzeDelta/'
+    geo_em_file = '../hands-on/ERA5/YangtzeDelta/geo/geo_em.d01.nc'
     levelist = '136'
     ZLVL = 30
 

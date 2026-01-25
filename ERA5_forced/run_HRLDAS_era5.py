@@ -12,11 +12,11 @@ loop_start_date = '08-01'
 loop_end_date = '08-31'
 area = [55, 30, -50, 155]
 levelists = ['136']
-dir_raw = '../test/ERA5/raw/'
-dir_hrldas = '../test/ERA5/'
-geo_em_file = '../test/ERA5/geo/geo_em.d02.nc'
-urbanParamTable = '../test/ERA5/tables/URBPARM.TBL'
-nameList = '../test/ERA5/namelists/namelist.hrldas'
+dir_raw = '../hands-on/ERA5/YangtzeDelta/raw/'
+dir_hrldas = '../hands-on/ERA5/YangtzeDelta/'
+geo_em_file = '../hands-on/ERA5/YangtzeDelta/geo/geo_em.d01.nc'
+urbanParamTable = '../hands-on/ERA5/YangtzeDelta/raw/tables/URBPARM.TBL'
+nameList = '../hands-on/ERA5/YangtzeDelta/namelists/namelist.hrldas'
 exe_directory = '../hrldas/hrldas/run/'
 levelist = '136'
 ZLVL = 30
@@ -32,7 +32,8 @@ download_files_for_compute_geopotential(dir_raw, area)
 download_era5_single_layer_for_setup(start_year, months[0], '01', area, dir_raw)
 
 # Download ERA5 single layer data for forcing
-download_era5_single_layer_ssrd_strd_sp_tp(start_year, end_year, months, area, dir_raw)
+download_era5_single_layer_accum_ssrd_strd_tp(start_year, end_year, months, area, dir_raw)
+download_era5_single_layer_instant_sp(start_year, end_year, months, area, dir_raw)
 
 # Download ERA5 model level data for forcing
 download_era5_model_levels_t_u_v_q(start_year, end_year, months, area, levelists, dir_raw)

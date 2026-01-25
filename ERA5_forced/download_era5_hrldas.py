@@ -98,9 +98,11 @@ def download_era5_single_layer_for_setup(year, month, day, area, dir):
 
 # Download ERA5 single layer data for ssrd, strd, sp, tp
 # Dataset: ERA5 hourly data on single levels from 1979 to present (reanalysis-era5-single-levels)
-# Variables: Surface solar radiation downwards (ssrd), Surface thermal radiation downwards (strd), 
-#            Surface pressure (sp), Total precipitation (tp)
-def download_era5_single_layer_ssrd_strd_sp_tp(start_year, end_year, months, area, dir):
+# Variables: 
+#   accumlated: Surface solar radiation downwards (ssrd), 
+#               Surface thermal radiation downwards (strd), 
+#               Total precipitation (tp)
+def download_era5_single_layer_accum_ssrd_strd_tp(start_year, end_year, months, area, dir):
 
     # pair = namedtuple("pair", ["long", "short"])
     # variables = [pair("surface_solar_radiation_downwards", "ssrd"), pair("surface_thermal_radiation_downwards", "strd"),\
@@ -109,7 +111,7 @@ def download_era5_single_layer_ssrd_strd_sp_tp(start_year, end_year, months, are
     for year in range(start_year, end_year+1):
         for month in months:
 
-            output_filename = f'{str(year)}{month}_ssrd_strd_sp_tp_era5_single_layer.nc'
+            output_filename = f'{str(year)}{month}_accum_ssrd_strd_tp_era5_single_layer.nc'
             # output_filename = f'{str(year)}{month}_{var.short}_era5_single_layer.nc'
             print(os.path.join(dir, output_filename))
 
@@ -119,7 +121,48 @@ def download_era5_single_layer_ssrd_strd_sp_tp(start_year, end_year, months, are
                 request = {
                     'product_type': ['reanalysis'],
                     'variable': ['surface_solar_radiation_downwards', 'surface_thermal_radiation_downwards',
-                                 'surface_pressure', 'total_precipitation'],
+                                 'total_precipitation'],
+                    'year': str(year),
+                    'month': month,
+                    'day': ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', 
+                            '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', 
+                            '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', 
+                            '31'],
+                    'time': ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', 
+                                '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', 
+                                '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', 
+                                '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'],
+                    'data_format': 'netcdf',
+                    'download_format': 'unarchived',
+                    'area': area
+                }
+
+                client = cdsapi.Client()
+                client.retrieve(dataset, request).download(os.path.join(dir, output_filename))
+
+# Download ERA5 single layer data for ssrd, strd, sp, tp
+# Dataset: ERA5 hourly data on single levels from 1979 to present (reanalysis-era5-single-levels)
+# Variables: 
+#   instant:    Surface pressure (sp)
+def download_era5_single_layer_instant_sp(start_year, end_year, months, area, dir):
+
+    # pair = namedtuple("pair", ["long", "short"])
+    # variables = [pair("surface_solar_radiation_downwards", "ssrd"), pair("surface_thermal_radiation_downwards", "strd"),\
+    #      pair("surface_pressure", "sp"), pair("total_precipitation", "tp")]
+
+    for year in range(start_year, end_year+1):
+        for month in months:
+
+            output_filename = f'{str(year)}{month}_instant_sp_era5_single_layer.nc'
+            # output_filename = f'{str(year)}{month}_{var.short}_era5_single_layer.nc'
+            print(os.path.join(dir, output_filename))
+
+            if not os.path.exists(os.path.join(dir, output_filename)):
+
+                dataset = "reanalysis-era5-single-levels"
+                request = {
+                    'product_type': ['reanalysis'],
+                    'variable': ['surface_pressure'],
                     'year': str(year),
                     'month': month,
                     'day': ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', 
@@ -188,7 +231,7 @@ if __name__ == '__main__':
     months = ['08']                          # For example, ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
     area = [55, 30, -50, 155]
     levelists = ['136']
-    dir = '../test/ERA5/raw/'
+    dir = '../hands-on/ERA5/YangtzeDelta/raw/'
 
     # Prerequisites to calculating Geopotential on model levels
     download_files_for_compute_geopotential(dir, area)
@@ -198,6 +241,7 @@ if __name__ == '__main__':
         download_era5_single_layer_for_setup(year, months[0], '01', area, dir)
 
     # Download ERA5 single layer data for forcing
-    download_era5_single_layer_ssrd_strd_sp_tp(start_year, end_year, months, area, dir)
+    download_era5_single_layer_accum_ssrd_strd_tp(start_year, end_year, months, area, dir)
+    download_era5_single_layer_instant_sp(start_year, end_year, months, area, dir)
     # Download ERA5 model level data for forcing
     download_era5_model_levels_t_u_v_q(start_year, end_year, months, area, levelists, dir)
