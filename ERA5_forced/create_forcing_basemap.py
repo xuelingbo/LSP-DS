@@ -10,9 +10,7 @@ import numpy as np
 import os
 import pandas as pd
 import xarray as xr
-import rioxarray
-from scipy.interpolate import RectBivariateSpline
-# import mpl_toolkits.basemap
+import mpl_toolkits.basemap
 
 def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_file, levelist, ZLVL):
     
@@ -33,11 +31,7 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
     
     geo_em = xr.open_dataset(geo_em_file)
     geo_lat, geo_lon = geo_em.XLAT_M.values[0], geo_em.XLONG_M.values[0]
-    geo_lat_flat, geo_lon_flat = geo_lat.ravel(), geo_lon.ravel()
-    
     z_file = xr.open_dataset(os.path.join(raw_data_dir, 'z_out.grib'), engine='cfgrib')
-    z_file_domain = z_file.sel(latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5), 
-                              longitude=slice(geo_lon.min()-0.5, geo_lon.max()+0.5))
     
     for date in pd.date_range(start_date, end_date, freq= 'D'):
         
@@ -50,43 +44,28 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
                 if variables[var]['name'] in ['LWDOWN', 'SWDOWN']: 
                     filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_ssrd_strd_sp_tp_era5_single_layer.nc")
                     raw_data_file = xr.open_dataset(filename)
-                    data_vars_raw = raw_data_file.sel(
-                        latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5), 
-                        longitude=slice(geo_lon.min()-0.5, geo_lon.max()+0.5))
-                    raw_lat, raw_lon = data_vars_raw.latitude.values[::-1], data_vars_raw.longitude.values
-                    data_var = data_vars_raw[var].sel(valid_time=time, method='nearest')[::-1].values / 3600
+                    raw_lat, raw_lon = raw_data_file.latitude.values[::-1], raw_data_file.longitude.values
+                    data_var = raw_data_file[var].sel(valid_time=time, method='nearest')[::-1].values / 3600
 
                 elif variables[var]['name'] in ['RAINRATE']: 
                     filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_ssrd_strd_sp_tp_era5_single_layer.nc")
                     raw_data_file = xr.open_dataset(filename)
-                    data_vars_raw = raw_data_file.sel(
-                        latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5), 
-                        longitude=slice(geo_lon.min()-0.5, geo_lon.max()+0.5))
-                    raw_lat, raw_lon = data_vars_raw.latitude.values[::-1], data_vars_raw.longitude.values
-                    data_var = data_vars_raw[var].sel(valid_time=time, method='nearest')[::-1].values / 3600 * 1000
+                    raw_lat, raw_lon = raw_data_file.latitude.values[::-1], raw_data_file.longitude.values
+                    data_var = raw_data_file[var].sel(valid_time=time, method='nearest')[::-1].values / 3600 * 1000
 
                 elif variables[var]['name'] in ['PSFC']:
                     filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_ssrd_strd_sp_tp_era5_single_layer.nc")
                     raw_data_file = xr.open_dataset(filename)
-                    data_vars_raw = raw_data_file.sel(
-                        latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5), 
-                        longitude=slice(geo_lon.min()-0.5, geo_lon.max()+0.5))
-                    raw_lat, raw_lon = data_vars_raw.latitude.values[::-1], data_vars_raw.longitude.values
-                    data_var = data_vars_raw[var].sel(valid_time=time, method='nearest')[::-1].values
+                    raw_lat, raw_lon = raw_data_file.latitude.values[::-1], raw_data_file.longitude.values
+                    data_var = raw_data_file[var].sel(valid_time=time, method='nearest')[::-1].values
 
                 elif variables[var]['name'] in ['T2D']:
                     filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_t_u_v_q_{levelist}_era5_model_level.nc")
                     raw_data_file = xr.open_dataset(filename)
-                    data_vars_raw = raw_data_file.sel(
-                        latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5), 
-                        longitude=slice(geo_lon.min()-0.5, geo_lon.max()+0.5))
-                    raw_lat, raw_lon = data_vars_raw.latitude.values[::-1], data_vars_raw.longitude.values
-                    # data_var = data_vars_raw[var].sel(valid_time=time, model_level=levelist, method='nearest')
-                    # data_var_correct_to_msl = (data_var - ( -0.0065 * z_file_domain.sel(hybrid=levelist)['z'].values / 9.80665 ))[::-1].values
-                    t_raw = data_vars_raw[var].sel(valid_time=time, model_level=levelist, method='nearest').values[::-1, :]
-                    z_raw = z_file_domain.sel(hybrid=levelist)['z'].values.squeeze()[::-1, :]
-                    data_var_correct_to_msl = t_raw - (-0.0065 * z_raw / 9.80665)                
-
+                    raw_lat, raw_lon = raw_data_file.latitude.values[::-1], raw_data_file.longitude.values
+                    data_var = raw_data_file[var].sel(valid_time=time, model_level=levelist, method='nearest')
+                    data_var_correct_to_msl = (data_var - ( -0.0065 * z_file.sel(hybrid=levelist)['z'].values / 9.80665 ))[::-1].values
+                
                 elif variables[var]['name'] in ['LAI', 'VEGFRA']:
                     if date.is_leap_year:
                         raw_data_file = xr.open_dataset(os.path.join(output_dir,'LDASIN', f'{var}_leap.nc'))
@@ -98,32 +77,25 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
                 else:
                     filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_t_u_v_q_{levelist}_era5_model_level.nc")
                     raw_data_file = xr.open_dataset(filename)
-                    data_vars_raw = raw_data_file.sel(
-                        latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5), 
-                        longitude=slice(geo_lon.min()-0.5, geo_lon.max()+0.5))
-                    raw_lat, raw_lon = data_vars_raw.latitude.values[::-1], data_vars_raw.longitude.values
-                    data_var = data_vars_raw[var].sel(valid_time=time, model_level=levelist, method='nearest')[::-1].values
+                    raw_lat, raw_lon = raw_data_file.latitude.values[::-1], raw_data_file.longitude.values
+                    data_var = raw_data_file[var].sel(valid_time=time, model_level=levelist, method='nearest')[::-1].values
 
                 if variables[var]['name'] in ['T2D']:
-                    # data_var_interpolated = mpl_toolkits.basemap.interp(data_var_correct_to_msl, 
-                    #                                                 raw_lon, raw_lat, 
-                    #                                                 geo_lon, geo_lat, 
-                    #                                                 checkbounds=False, masked=False, order=1)
-                    interp_spline = RectBivariateSpline(raw_lat, raw_lon, data_var_correct_to_msl, kx=1, ky=1)
-                    data_var_interpolated = interp_spline.ev(geo_lat_flat, geo_lon_flat).reshape(geo_lat.shape)
-                    data_var_correct_to_HGT_M = data_var_interpolated + ( -0.0065 * (geo_em['HGT_M'].values.squeeze()+ZLVL))
-                    LDASIN_file[variables[var]['name']] = (('Time','south_north','west_east'), [data_var_correct_to_HGT_M])
+                    data_var_interpolated = mpl_toolkits.basemap.interp(data_var_correct_to_msl, 
+                                                                    raw_lon, raw_lat, 
+                                                                    geo_lon, geo_lat, 
+                                                                    checkbounds=False, masked=False, order=1)
+                    data_var_correct_to_HGT_M = data_var_interpolated + ( -0.0065 * (geo_em['HGT_M'][::-1].values+ZLVL))
+                    LDASIN_file[variables[var]['name']] = (('Time','south_north','west_east'), data_var_correct_to_HGT_M)
                     LDASIN_file[variables[var]['name']].attrs['units'] = variables[var]['attrs']['units']
                 elif variables[var]['name'] in ['LAI', 'VEGFRA']:
                     LDASIN_file[variables[var]['name']] = (('Time','south_north','west_east'), data_var)
                     LDASIN_file[variables[var]['name']].attrs['units'] = variables[var]['attrs']['units']
                 else:
-                    # data_var_interpolated = mpl_toolkits.basemap.interp(data_var, 
-                    #                                                 raw_lon, raw_lat, 
-                    #                                                 geo_lon, geo_lat, 
-                    #                                                 checkbounds=False, masked=False, order=1)
-                    interp_spline = RectBivariateSpline(raw_lat, raw_lon, data_var, kx=1, ky=1)
-                    data_var_interpolated = interp_spline.ev(geo_lat_flat, geo_lon_flat).reshape(geo_lat.shape)
+                    data_var_interpolated = mpl_toolkits.basemap.interp(data_var, 
+                                                                    raw_lon, raw_lat, 
+                                                                    geo_lon, geo_lat, 
+                                                                    checkbounds=False, masked=False, order=1)
                     LDASIN_file[variables[var]['name']] = (('Time','south_north','west_east'), [data_var_interpolated])
                     LDASIN_file[variables[var]['name']].attrs['units'] = variables[var]['attrs']['units']
 
@@ -164,6 +136,7 @@ def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file):
         "DZS": {'units': 'm'} ,  # each soil layer depth
         "ZS": {'units': 'm'} ,   # soil layer 
         "SNOW": {'units': 'kg/m^2'} , #snow depth
+        # 'SNODEP':{'units': 'kg/m^2'} , #snow depth
 
         # add
         "SEAICE": {'units': ''} ,       # sea ice fraction (=0 for a land point)
@@ -172,33 +145,46 @@ def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file):
     
     geo_em = xr.open_dataset(geo_em_file)
     geo_lat, geo_lon = geo_em.XLAT_M.values[0], geo_em.XLONG_M.values[0]
-    geo_lat_flat, geo_lon_flat = geo_lat.ravel(), geo_lon.ravel()
-
     iswater = int(geo_em.attrs['ISWATER'])
     islake = int(geo_em.attrs['ISLAKE'])
     issoilwater = int(geo_em.attrs['ISOILWATER'])
-    water_mask = (geo_em.LU_INDEX.values[0] == iswater) | (geo_em.LU_INDEX.values[0] == islake)
 
     if pd.Timestamp(start_date).is_leap_year:
         LAI = xr.open_dataset(os.path.join(output_dir, 'LDASIN', 'LAI12M_leap.nc'))
     else:
         LAI = xr.open_dataset(os.path.join(output_dir, 'LDASIN', 'LAI12M.nc'))
 
+    # get skin temperature, soil temperature, soil moisture and snow depth from raw data files
+    # raw_data_file = xr.open_dataset(raw_data_dir+'/'+pd.to_datetime(start_date).strftime('%Y')
+    #                                     +'/ERA5-'+pd.to_datetime(start_date).strftime('%Y%m%d')+'-sl.nc')
+
     raw_data_file = xr.open_dataset(os.path.join(raw_data_dir, pd.to_datetime(start_date).strftime('%Y%m%d')+'00_setup.nc'))
-    data_vars_raw = raw_data_file.sel(
-        latitude=slice(geo_lat.max(), geo_lat.min()), 
-        longitude=slice(geo_lon.min(), geo_lon.max()))
-    raw_lat, raw_lon = data_vars_raw.latitude.values[::-1], data_vars_raw.longitude.values     # lat, lon ascending order
-    
+    data_var_raw = raw_data_file.sel(latitude=slice(geo_lat.max(), geo_lat.min()), \
+                                          longitude=slice(geo_lon.min(), geo_lon.max()))
+    raw_lat, raw_lon = data_var_raw.latitude.values[::-1], data_var_raw.longitude.values
     soil_data = []
     for var in ['skt', 'swvl1', 'swvl2', 'swvl3', 'swvl4', 'stl1', 'stl2', 'stl3', 'stl4', 'sd']:
-        # data_var = data_vars_raw[var].rio.write_crs("epsg:4326",inplace=True).rio.interpolate_na()[0][::-1].values
-        data_var = data_vars_raw[var].rio.write_crs("epsg:4326").rio.interpolate_na().squeeze().values[::-1, :]
-        interp_spline = RectBivariateSpline(raw_lat, raw_lon, data_var, kx=1, ky=1)
-        data_var_interpolated = interp_spline.ev(geo_lat_flat, geo_lon_flat).reshape(geo_lat.shape)
-        # data_var_interpolated = xr.where((geo_em.LU_INDEX==iswater)|(geo_em.LU_INDEX==islake), np.nan, data_var_interpolated)
-        data_var_interpolated_masked = np.where(water_mask, np.nan, data_var_interpolated)
-        soil_data.append(data_var_interpolated_masked) 
+        data_var = data_var_raw[var].rio.write_crs("epsg:4326",inplace=True).rio.interpolate_na()[0][::-1].values
+        data_var_interpolated = mpl_toolkits.basemap.interp(data_var, 
+                                                            raw_lon, raw_lat, 
+                                                            geo_lon, geo_lat,  
+                                                            checkbounds=False, masked=False, order=1)
+        data_var_interpolated = xr.where((geo_em.LU_INDEX==iswater)|(geo_em.LU_INDEX==islake), np.nan, data_var_interpolated)
+        soil_data.append(data_var_interpolated[0].values) 
+
+
+    # raw_data_file = xr.open_dataset(raw_data_dir+'/'+pd.to_datetime(start_date).strftime('%Y%m%d')+'00_setup.nc')
+    # raw_lat, raw_lon = raw_data_file.latitude.values[::-1], raw_data_file.longitude.values
+    # soil_data = []
+    # for var in ['skt', 'swvl1', 'swvl2', 'swvl3', 'swvl4', 'stl1', 'stl2', 'stl3', 'stl4', 'sd']:
+    #     data_var = raw_data_file[var][0][::-1].values
+    #     data_var_interpolated = mpl_toolkits.basemap.interp(data_var, 
+    #                                                         raw_lon, raw_lat, 
+    #                                                         geo_lon, geo_lat,  
+    #                                                         checkbounds=False, masked=False, order=1)
+    #     data_var_interpolated = xr.where((geo_em.LU_INDEX==iswater)|(geo_em.LU_INDEX==islake), np.NaN, data_var_interpolated)
+    #     soil_data.append(data_var_interpolated[0].values) 
+
 
     setup_file = xr.Dataset()
     
@@ -222,9 +208,8 @@ def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file):
         #######################
         # adjust to elevation
         elif var == 'TMN':
-            data_var = geo_em[variables[var]['geoname']].values[0] - 0.0065 * geo_em['HGT_M'].values[0]
-            # data_var = xr.where((geo_em.LU_INDEX==iswater)|(geo_em.LU_INDEX==islake), -1.e36, data_var).values
-            data_var = [np.where(water_mask, -1.e36, data_var)]
+            data_var = geo_em[variables[var]['geoname']].values - 0.0065 * geo_em['HGT_M'].values
+            data_var = xr.where((geo_em.LU_INDEX==iswater)|(geo_em.LU_INDEX==islake), -1.e36, data_var).values
 
         # gvfmax%field(:,:) = maxval(geo_em%veg,3)
         elif var == 'SHDMAX': 
@@ -243,14 +228,12 @@ def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file):
         # if LU_INDEX==iswater or islake,2; else 1.  
         elif var == 'XLAND':
             LU_data = geo_em[variables[var]['geoname']]
-            # data_var = xr.where((LU_data==iswater)|(LU_data==islake), 2, 1).values
-            data_var = [np.where(water_mask, 2, 1)]
+            data_var = xr.where((LU_data==iswater)|(LU_data==islake), 2, 1).values
         
         elif var == 'ISLTYP':
             dominant_index = geo_em['SOILCTOP'].argmax(dim='soil_cat') + 1
             dominant_value = geo_em['SOILCTOP'].max(dim='soil_cat')
-            dominant_index_corrected = xr.where(
-                (dominant_value < 0.01) | (dominant_value > 1.0), 8, dominant_index)
+            dominant_index_corrected = xr.where(dominant_value<0.01, 8, dominant_index)
             data_var = xr.where(setup_file['XLAND']==2, issoilwater, dominant_index_corrected)
             data_var = xr.where((setup_file['XLAND']!=2)&(data_var==14), 8, data_var).values
 
@@ -343,9 +326,9 @@ if __name__ == '__main__':
     end_year = 2020
     loop_start_date = '08-01'
     loop_end_date = '08-02'
-    # raw_data_dir = '../hands-on/ERA5/YangtzeDelta/raw/'
-    # output_dir = '../hands-on/ERA5/YangtzeDelta/'
-    # geo_em_file = '../hands-on/ERA5/YangtzeDelta/geo/geo_em.d01.nc'
+    # raw_data_dir = '../test/ERA5/raw/'
+    # output_dir = '../test/ERA5/'
+    # geo_em_file = '../test/ERA5/geo/geo_em.d02.nc'
     raw_data_dir = '../hands-on/ERA5/YangtzeDelta/raw/'
     output_dir = '../hands-on/ERA5/Tokyo/'
     geo_em_file = '../hands-on/ERA5/Tokyo/geo/geo_em.d02.nc'
