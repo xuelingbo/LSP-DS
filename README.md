@@ -9,6 +9,14 @@ Xue, L., Doan, Q.‐V., Kusaka, H., He, C., & Chen, F. (2024). Insights into urb
 
 Xue, L., Doan, Q. V., Kusaka, H., He, C., & Chen, F. (2025). Land-surface-physics-based downscaling versus conventional dynamical downscaling for high-resolution urban climate change information: The case study of two cities. Urban Climate, 59, 102228. https://doi.org/10.1016/j.uclim.2024.102228
 
+## 0. Preparation: conda environment
+
+```bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+source ~/.bashrc
+```
+
 ## 1. Download the LSP-DS code
 
 To download the LSP-DS code, use the following command:
@@ -21,7 +29,14 @@ HRLDAS model website: https://ral.ucar.edu/solutions/products/high-resolution-la
 
 Noah-MP model GitHub repository: https://github.com/NCAR/noahmp
 
-## 2. Modify the Source Code
+## 2. Recreate Environment from YAML
+
+```bash
+conda env create -f environment.yml
+conda activate hrldas`
+```
+
+## 3. Modify the Source Code
 
 To modify the original HRLDAS/Noah-MP code, please use the following command:
 
@@ -29,18 +44,28 @@ To modify the original HRLDAS/Noah-MP code, please use the following command:
 
 This command will copy the modified files and cover the original one.
 
-## 3. Compile HRLDAS
+## 4. Compile HRLDAS
 
-Please follow [`hrldas_manual.ipynb`](https://github.com/xuelingbo/LSP-DS/blob/main/hrldas_manual.ipynb) to install the necessary libraries and compile the HRLDAS.
+```bash
+cd LSP-DS/hrldas/hrldas/
+cp ./user_build_options.mpi user_build_options
+make
+```
 
-## 4. Run HRLDAS
+## 5. Create Forcings
 
-A script for using ERA5 data as forcing is provided here [`run_HRLDAS_era5.py`](https://github.com/xuelingbo/LSP-DS/blob/main/ERA5_forced/run_HRLDAS_era5.py). The necessary [`geo_em file`](https://github.com/xuelingbo/LSP-DS/blob/main/test/ERA5/geo/geo_em.d02.nc), [`namelist.hrldas`](https://github.com/xuelingbo/LSP-DS/blob/main/test/ERA5/namelists/namelist.hrldas), and [`URBPARM.TBL`](https://github.com/xuelingbo/LSP-DS/blob/main/test/ERA5/tables/URBPARM.TBL) are provided. After running the script, the output files will be generated in `/test/ERA5/LDASOUT`.
+```bash
+ cd ../../ERA5_forced/
+ python create_forcing.py
+```
 
-## 5. Postprocessing
+## 6. Run HRLDAS Manually
 
-A script for extracting data based on observational stations is provided in [`extract_data_based_on_stations.py`](https://github.com/xuelingbo/LSP-DS/blob/main/postprocessing_scripts/extract_data_based_on_stations.py). An example of the necessary staions information file is provided here [Amedas_list.csv](https://github.com/xuelingbo/LSP-DS/blob/main/test/ERA5/tables/Amedas_list.csv). After running the script, the output csv files will be generated in [`results/`](https://github.com/xuelingbo/LSP-DS/tree/main/test/ERA5/results).
-
+```bash
+cd run
+cp ../../../hands-on/ERA5/YangtzeDelta/namelists/namelist.hrldas .
+./hrldas.exe
+```
 
 # HRLDAS (High Resolution Land Data Assimilation System) 
 The High-Resolution Land Data Assimilation System (HRLDAS) is a widely-used open-source offline community framework/driver of land surface models (LSMs). HRLDAS uses a combination of observed and analyzed meterological forcing (precipitation, shortwave and longwave radiation, surface wind, specific humidity, temperature, surface pressure) to drive a LSM to simulate the evolution of land surface states. The system has been developed to leverage the WRF pre-processed input data (e.g., WPS geo_em* file) and conduct computationally-efficient model run to generate more accurate initial land state conditions and/or produce the offline LSM simulations alone for scientific studies.

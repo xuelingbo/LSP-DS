@@ -25,6 +25,8 @@ conda install -c conda-forge netcdf-fortran -y
 
 conda install -c conda-forge fortran-compiler -y
 
+conda install -c conda-forge gfortran openmpi -y
+
 conda install -c conda-forge cfgrib eccodes
 
 conda install -c conda-forge cdsapi

@@ -116,6 +116,7 @@ dependencies:
   - libbrotlicommon=1.2.0=hb03c661_1
   - libbrotlidec=1.2.0=hb03c661_1
   - libbrotlienc=1.2.0=hb03c661_1
+  - libcap=2.77=h3ff7636_0
   - libcblas=3.11.0=5_h0358290_openblas
   - libclang-cpp18.1=18.1.8=default_h99862b1_17
   - libclang13=21.1.0=default_h746c552_1
@@ -127,7 +128,10 @@ dependencies:
   - libedit=3.1.20250104=pl5321h7949ede_0
   - libegl=1.7.0=ha4b6fd6_2
   - libev=4.33=hd590300_2
+  - libevent=2.1.12=hf998b51_1
   - libexpat=2.7.3=h7354ed3_4
+  - libfabric=2.4.0=ha770c72_1
+  - libfabric1=2.4.0=h8f87c3e_1
   - libffi=3.4.4=h6a678d5_1
   - libfreetype=2.14.1=ha770c72_0
   - libfreetype6=2.14.1=h73754d4_0
@@ -148,6 +152,7 @@ dependencies:
   - libgoogle-cloud=2.28.0=h26d7fe4_0
   - libgoogle-cloud-storage=2.28.0=ha262f82_0
   - libgrpc=1.62.2=h2d74bed_0
+  - libhwloc=2.12.1=default_h3d81e11_1000
   - libiconv=1.18=h3b78370_2
   - libjpeg-turbo=3.1.2=hb03c661_0
   - libkml=1.3.0=h096b73e_7
@@ -156,10 +161,12 @@ dependencies:
   - libllvm21=21.1.0=hecd9e04_0
   - libnetcdf=4.9.2=nompi_h00e09a9_116
   - libnghttp2=1.67.0=had1ee68_0
+  - libnl=3.11.0=hb9d3cd8_0
   - libnsl=2.0.1=hb9d3cd8_1
   - libopenblas=0.3.30=pthreads_h94d23a6_4
   - libopengl=1.7.0=ha4b6fd6_2
   - libpciaccess=0.18=hb9d3cd8_0
+  - libpmix=5.0.8=h4bd6b51_2
   - libpng=1.6.54=h421ea60_0
   - libpq=16.10=h1cdf469_1
   - libprotobuf=4.25.3=he621ea3_0
@@ -170,7 +177,9 @@ dependencies:
   - libssh2=1.11.1=hcf80075_0
   - libstdcxx=15.2.0=h39759b7_7
   - libstdcxx-ng=15.2.0=hc03a8fd_7
+  - libsystemd0=258.3=h6569c3e_0
   - libtiff=4.6.0=h1dd3fc0_3
+  - libudev1=258.3=h6569c3e_0
   - libudunits2=2.2.28=h40f5838_3
   - libuuid=2.41.3=h5347b49_0
   - libuv=1.51.0=hb03c661_1
@@ -187,6 +196,7 @@ dependencies:
   - matplotlib=3.10.8=py312h7900ff3_0
   - matplotlib-base=3.10.8=py312he3d6523_0
   - minizip=4.0.3=hf59b114_0
+  - mpi=1.0.1=openmpi
   - multiurl=0.3.7=pyhd8ed1ab_0
   - munkres=1.1.4=pyhd8ed1ab_1
   - mysql-common=8.3.0=h70512c7_5
@@ -199,6 +209,7 @@ dependencies:
   - nss=3.117=h3135ca0_0
   - numpy=2.4.1=py312h33ff503_0
   - openjpeg=2.5.2=he7f1fd0_0
+  - openmpi=5.0.8=h2fe1745_110
   - openssl=3.6.0=h26f9b46_0
   - packaging=25.0=pyh29332c3_1
   - pandas=2.3.3=py312hf79963d_1
@@ -226,6 +237,7 @@ dependencies:
   - qhull=2020.2=h434a139_5
   - qt6-main=6.7.2=h7d13b96_3
   - rasterio=1.3.10=py312hc022a17_4
+  - rdma-core=61.0=h192683f_0
   - re2=2022.04.01=h295c915_0
   - readline=8.3=hc2a1206_0
   - requests=2.32.5=pyhcf101f3_1
@@ -247,6 +259,8 @@ dependencies:
   - typing_extensions=4.15.0=pyhcf101f3_0
   - tzcode=2025c=hb03c661_0
   - tzdata=2025c=he532380_0
+  - ucc=1.6.0=hb729f83_1
+  - ucx=1.19.1=h567e125_0
   - udunits2=2.2.28=h40f5838_3
   - unicodedata2=17.0.0=py312h4c3975b_1
   - uriparser=0.9.8=h451ca9b_0
