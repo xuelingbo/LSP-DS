@@ -1,8 +1,8 @@
 &NOAHLSM_OFFLINE
 
- HRLDAS_SETUP_FILE = "/home/lingbo/LSP-DS/hands-on/ERA5/Tokyo/LDASIN/HRLDAS_setup_2020080100_d2"
- INDIR = "/home/lingbo/LSP-DS/hands-on/ERA5/Tokyo/LDASIN/"
- OUTDIR = "/home/lingbo/LSP-DS/hands-on/ERA5/Tokyo/LDASOUT/"
+ HRLDAS_SETUP_FILE = "/home/lingbo/LSP-DS/hands-on/ERA5/YangtzeDelta/LDASIN/HRLDAS_setup_2020080100_d1"
+ INDIR = "/home/lingbo/LSP-DS/hands-on/ERA5/YangtzeDelta/LDASIN/"
+ OUTDIR = "/home/lingbo/LSP-DS/hands-on/ERA5/YangtzeDelta/LDASOUT/"
 
  START_YEAR  = 2020
  START_MONTH = 08

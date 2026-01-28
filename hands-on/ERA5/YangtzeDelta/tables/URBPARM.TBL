@@ -233,7 +233,7 @@ DZGR:  0.05 0.10 0.15 0.20
 #      (sf_urban_physics=1,2,3)
 #
 
-FRC_URB: 0.5, 0.8, 0.95
+FRC_URB: 0.5, 0.7, 0.95
 
 #
 # CAPR:  Heat capacity of roof  [ J m{-3} K{-1} ]
