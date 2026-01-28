@@ -146,8 +146,8 @@ def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file):
         "XLONG": {'units': 'degree_east', 'geoname': 'XLONG_M'} , 
         "HGT": {'units': 'm', 'geoname': 'HGT_M'} , 
         "MAPFAC_MX": {'units': '', 'geoname': 'MAPFAC_MX'} , 
-        "MAPFAC_MY": {'units': '', 'geoname': 'MAPFAC_MY'} , 
-        "IVGTYP": {'units': '', 'geoname': 'LU_INDEX'} , 
+        "MAPFAC_MY": {'units': '', 'geoname': 'MAPFAC_MY'} ,  
+        "URBLANDUSEF": {'units': '', 'geoname': 'LANDUSEF'} ,      # for 2D urban fraction
 
         # edit from geo_em file
         "TMN": {'units': 'K', 'geoname': 'SOILTEMP'} ,  # adjust to elevation
@@ -156,6 +156,7 @@ def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file):
         "LAI": {'units': 'm^2/m^2'} , # LAI12M after interpolated
         "XLAND": {'units': '', 'geoname': 'LU_INDEX'} ,  # if LU_INDEX==iswater or islake,2; else 1.  
         "ISLTYP": {'units': '', 'geoname': 'SOILCTOP'} ,
+        "IVGTYP": {'units': '', 'geoname': 'LU_INDEX'} ,
 
         # from raw data file
         "TSK": {'units': 'K'} ,  # skin temperature from ERA5 
@@ -214,8 +215,14 @@ def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file):
         ##################
         # from geo_em file
         ##################
-        elif var in ['XLAT', 'XLONG', 'HGT', "MAPFAC_MX", "MAPFAC_MY", "IVGTYP"]: 
+        elif var in ['XLAT', 'XLONG', 'HGT', "MAPFAC_MX", "MAPFAC_MY"]: 
             data_var = geo_em[variables[var]['geoname']].values
+        
+        elif var == 'URBLANDUSEF':
+            data_var = geo_em[variables[var]['geoname']].sel(land_cat=12).values       # urban
+            # if unresonable values appear, set them to 0
+            data_var[data_var < 0] = 0              
+            data_var[data_var > 1] = 0
         
         #######################
         # edit from geo_em file
@@ -253,6 +260,11 @@ def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file):
                 (dominant_value < 0.01) | (dominant_value > 1.0), 8, dominant_index)
             data_var = xr.where(setup_file['XLAND']==2, issoilwater, dominant_index_corrected)
             data_var = xr.where((setup_file['XLAND']!=2)&(data_var==14), 8, data_var).values
+
+        # if urbanlandusef exist and resonable, set IVGTYP=13(urban)
+        elif var == 'IVGTYP':
+            LU = xr.where(((geo_em.LANDUSEF).sel(land_cat=12)<=1)&((geo_em.LANDUSEF).sel(land_cat=12)>0), 13, geo_em.LU_INDEX)  
+            data_var = LU.values
 
         ####################
         # from raw data file
@@ -343,9 +355,12 @@ if __name__ == '__main__':
     end_year = 2020
     loop_start_date = '08-01'
     loop_end_date = '08-02'
-    raw_data_dir = '../hands-on/ERA5/YangtzeDelta/raw-test/'
+    raw_data_dir = '../hands-on/ERA5/YangtzeDelta/raw/'
     output_dir = '../hands-on/ERA5/YangtzeDelta/'
     geo_em_file = '../hands-on/ERA5/YangtzeDelta/geo/geo_em.d01.nc'
+    # raw_data_dir = '../hands-on/ERA5/YangtzeDelta/raw/'
+    # output_dir = '../hands-on/ERA5/Tokyo/'
+    # geo_em_file = '../hands-on/ERA5/Tokyo/geo/geo_em.d02.nc'
     levelist = '136'
     ZLVL = 30
 

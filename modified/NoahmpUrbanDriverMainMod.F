@@ -38,7 +38,7 @@ contains
                         drelr_urb2d,    drelb_urb2d,    drelg_urb2d,                        & !H urban
                       flxhumr_urb2d,  flxhumb_urb2d,  flxhumg_urb2d,                        & !H urban
                              julian,          julyr,                                        & !H urban
-                          frc_urb2d,    utype_urb2d,                                        & !I urban
+                          frc_urb2d,    utype_urb2d,  urblandusef_2d,                       & !I urban            ! xue.lingbo 2026.01.28
                                 chs,           chs2,           cqs2,                        & !H
                       num_urban_ndm,  urban_map_zrd,  urban_map_zwd, urban_map_gd,          & !I multi-layer urban
                        urban_map_zd,  urban_map_zdf,   urban_map_bd, urban_map_wd,          & !I multi-layer urban
@@ -119,6 +119,7 @@ contains
 
      INTEGER,        DIMENSION( ims:ime, jms:jme ),          INTENT(IN   ) :: UTYPE_URB2D
      REAL,           DIMENSION( ims:ime, jms:jme ),          INTENT(IN   ) :: FRC_URB2D
+     REAL,           DIMENSION( ims:ime, jms:jme ),          INTENT(IN   ) :: URBLANDUSEF_2D                           ! xue.lingbo 2026.01.28
 
      REAL, OPTIONAL, DIMENSION(1:num_roof_layers),           INTENT(IN   ) :: DZR
      REAL, OPTIONAL, DIMENSION(1:num_wall_layers),           INTENT(IN   ) :: DZB
@@ -529,22 +530,24 @@ ILOOP : DO I = its, ite
     TS_URB2D(I,J)   = TS_URB
     TRAD_URB2D(I,J) = TRAD_URB                                                                    ! xue.lingbo 2024/08/11
 
-    ALBEDO(I,J)   = FRC_URB2D(I,J) * ALB_URB + (1-FRC_URB2D(I,J)) * ALBEDO(I,J)        ![-]      
-    HFX(I,J)      = FRC_URB2D(I,J) * SH_URB  + (1-FRC_URB2D(I,J)) * HFX(I,J)           ![W/m/m] 
-    QFX(I,J)      = FRC_URB2D(I,J) * LH_KINEMATIC_URB &
-                       + (1-FRC_URB2D(I,J))* QFX(I,J)                                  ![kg/m/m/s] 
-    LH(I,J)       = FRC_URB2D(I,J) * LH_URB  + (1-FRC_URB2D(I,J)) * LH(I,J)            ![W/m/m]   
-    GRDFLX(I,J)   = FRC_URB2D(I,J) * (G_URB * (-1.0)) + (1-FRC_URB2D(I,J)) * GRDFLX(I,J)![W/m/m] positive: downward direction
-    TSK(I,J)      = FRC_URB2D(I,J) * TS_URB  + (1-FRC_URB2D(I,J)) * TSK(I,J)           ![K]   
-    TRADXY(I,J)   = FRC_URB2D(I,J) * TRAD_URB + (1-FRC_URB2D(I,J)) * TRADXY(I,J)       ![K]       ! xue.lingbo 2024/08/11 
+
+    ! the real urban fraction is URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J)                             ! xue.lingbo 2026.01.28
+    ALBEDO(I,J)   = URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J) * ALB_URB + (1-URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J)) * ALBEDO(I,J)        ![-]      
+    HFX(I,J)      = URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J) * SH_URB  + (1-URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J)) * HFX(I,J)           ![W/m/m] 
+    QFX(I,J)      = URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J) * LH_KINEMATIC_URB &
+                       + (1-URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J))* QFX(I,J)                                  ![kg/m/m/s] 
+    LH(I,J)       = URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J) * LH_URB  + (1-URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J)) * LH(I,J)            ![W/m/m]   
+    GRDFLX(I,J)   = URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J) * (G_URB * (-1.0)) + (1-URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J)) * GRDFLX(I,J)![W/m/m] positive: downward direction
+    TSK(I,J)      = URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J) * TS_URB  + (1-URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J)) * TSK(I,J)           ![K]   
+    TRADXY(I,J)   = URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J) * TRAD_URB + (1-URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J)) * TRADXY(I,J)       ![K]       ! xue.lingbo 2024/08/11 
 !    Q1            = QSFC(I,J)/(1.0+QSFC(I,J))                                         
 !    Q1            = FRC_URB2D(I,J) * QS_URB  + (1-FRC_URB2D(I,J)) * Q1                 ![-]
 
 ! Convert QSFC back to mixing ratio
 
 !    QSFC(I,J)     = Q1/(1.0-Q1)
-                   QSFC(I,J)= FRC_URB2D(I,J)*QS_URB+(1-FRC_URB2D(I,J))*QSFC(I,J)               !!   QSFC(I,J)=QSFC1D
-    UST(I,J)      = FRC_URB2D(I,J) * UST_URB + (1-FRC_URB2D(I,J)) * UST(I,J)     ![m/s]
+                   QSFC(I,J)= URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J)*QS_URB+(1-URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J))*QSFC(I,J)               !!   QSFC(I,J)=QSFC1D
+    UST(I,J)      = URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J) * UST_URB + (1-URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J)) * UST(I,J)     ![m/s]
 
 ! Renew Urban State Variables
 

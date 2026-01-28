@@ -230,7 +230,7 @@ contains
  
     call READLAND_HRLDAS(NoahmpIO%HRLDAS_SETUP_FILE, NoahmpIO%XSTART, NoahmpIO%XEND, NoahmpIO%YSTART, NoahmpIO%YEND,          &
                          NoahmpIO%ISWATER, NoahmpIO%ISLAKE, NoahmpIO%IVGTYP, NoahmpIO%ISLTYP, NoahmpIO%TERRAIN, NoahmpIO%TMN, &
-                         NoahmpIO%XLAT, NoahmpIO%XLONG, NoahmpIO%XLAND, NoahmpIO%SEAICE, NoahmpIO%MSFTX, NoahmpIO%MSFTY)
+                         NoahmpIO%XLAT, NoahmpIO%XLONG, NoahmpIO%XLAND, NoahmpIO%SEAICE, NoahmpIO%MSFTX, NoahmpIO%MSFTY, NoahmpIO%URBLANDUSEF)  ! xue.lingbo 2026.01.28
   
     where (NoahmpIO%SEAICE > 0.0) NoahmpIO%XICE = 1.0
 
@@ -375,6 +375,7 @@ contains
        call get_from_restart(xstart, xend, xstart, ixfull, jxfull, "LAI"     , NoahmpIO%LAI      )
        call get_from_restart(xstart, xend, xstart, ixfull, jxfull, "SAI"     , NoahmpIO%XSAIXY   )
        call get_from_restart(xstart, xend, xstart, ixfull, jxfull, "VEGFRA"  , NoahmpIO%VEGFRA   )
+       call get_from_restart(xstart, xend, xstart, ixfull, jxfull, "URBLANDUSEF"  , NoahmpIO%URBLANDUSEF   )          ! xue.lingbo 2026.01.28
        call get_from_restart(xstart, xend, xstart, ixfull, jxfull, "GVFMIN"  , NoahmpIO%GVFMIN   )
        call get_from_restart(xstart, xend, xstart, ixfull, jxfull, "GVFMAX"  , NoahmpIO%GVFMAX   )
        call get_from_restart(xstart, xend, xstart, ixfull, jxfull, "ACMELT"  , NoahmpIO%ACSNOM   )
@@ -620,7 +621,7 @@ contains
           NoahmpIO%VEGFRA =  0.0
           call READVEG_HRLDAS(NoahmpIO%HRLDAS_SETUP_FILE, NoahmpIO%xstart, NoahmpIO%xend,        &
                               NoahmpIO%ystart, NoahmpIO%yend, NoahmpIO%OLDDATE, NoahmpIO%IVGTYP, &
-                              NoahmpIO%VEGFRA, NoahmpIO%LAI, NoahmpIO%GVFMIN, NoahmpIO%GVFMAX)
+                              NoahmpIO%VEGFRA, NoahmpIO%LAI, NoahmpIO%GVFMIN, NoahmpIO%GVFMAX, NoahmpIO%URBLANDUSEF)        ! xue.lingbo 2026.01.28
 
 #ifdef WRF_HYDRO
        else   !  HRLDAS_ini_typ        
@@ -1028,7 +1029,7 @@ contains
                             NoahmpIO%drelr_urb2d, NoahmpIO%drelb_urb2d, NoahmpIO%drelg_urb2d,                   & !H urban
                             NoahmpIO%flxhumr_urb2d, NoahmpIO%flxhumb_urb2d, NoahmpIO%flxhumg_urb2d,             & !H urban
                             NoahmpIO%julday, NoahmpIO%yr,                                                       & !H urban
-                            NoahmpIO%FRC_URB2D, NoahmpIO%utype_urb2d,                                           & !I urban
+                            NoahmpIO%FRC_URB2D, NoahmpIO%utype_urb2d, NoahmpIO%URBLANDUSEF,                     & !I urban          ! xue.lingbo 2026.01.28
                             NoahmpIO%chs, NoahmpIO%chs2, NoahmpIO%cqs2,                                          & !H
                             NoahmpIO%num_urban_ndm, NoahmpIO%urban_map_zrd, NoahmpIO%urban_map_zwd,             & !I multi-layer urban
                             NoahmpIO%urban_map_gd,                                                              & !I multi-layer urban 
@@ -1070,12 +1071,12 @@ contains
                         NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_6_TABLE   .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_7_TABLE .or. &
                         NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_8_TABLE   .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_9_TABLE .or. &
                         NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_10_TABLE  .or. NoahmpIO%IVGTYP(I,J) == NoahmpIO%LCZ_11_TABLE ) THEN
-                     
-                     NoahmpIO%Q2(I,J)  = (NoahmpIO%FVEGXY(I,J)*NoahmpIO%Q2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%Q2MBXY(I,J))*(1.-NoahmpIO%FRC_URB2D(I,J)) +   &
-                                 NoahmpIO%Q2_URB2D(I,J)*NoahmpIO%FRC_URB2D(I,J)
-                     NoahmpIO%T2(I,J)  = (NoahmpIO%FVEGXY(I,J)*NoahmpIO%T2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%T2MBXY(I,J))*(1.-NoahmpIO%FRC_URB2D(I,J)) +   &
+                     ! change urban fraction to NoahmpIO%URBLANDUSEF(I,J)*NoahmpIO%FRC_URB2D(I,J)   ! xue.lingbo 2026.01.28
+                     NoahmpIO%Q2(I,J)  = (NoahmpIO%FVEGXY(I,J)*NoahmpIO%Q2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%Q2MBXY(I,J))*(1.-NoahmpIO%URBLANDUSEF(I,J)*NoahmpIO%FRC_URB2D(I,J)) +   &
+                                 NoahmpIO%Q2_URB2D(I,J)*NoahmpIO%FRC_URB2D(I,J)*NoahmpIO%URBLANDUSEF(I,J)
+                     NoahmpIO%T2(I,J)  = (NoahmpIO%FVEGXY(I,J)*NoahmpIO%T2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%T2MBXY(I,J))*(1.-NoahmpIO%URBLANDUSEF(I,J)*NoahmpIO%FRC_URB2D(I,J)) +   &
                                  ! (NoahmpIO%TH2_URB2D(I,J)/((1.E5/NoahmpIO%FORCPLSM(I,J))**rcp))*NoahmpIO%FRC_URB2D(I,J) ! TH2_URB2D is physical temperature, not potential temperature
-                                 NoahmpIO%TH2_URB2D(I,J)*NoahmpIO%FRC_URB2D(I,J) 
+                                 NoahmpIO%TH2_URB2D(I,J)*NoahmpIO%FRC_URB2D(I,J)*NoahmpIO%URBLANDUSEF(I,J) 
                   ELSE
 
                      NoahmpIO%Q2(I,J)  = NoahmpIO%FVEGXY(I,J)*NoahmpIO%Q2MVXY(I,J) + (1.-NoahmpIO%FVEGXY(I,J))*NoahmpIO%Q2MBXY(I,J)
@@ -1349,6 +1350,7 @@ contains
                call add_to_output(    NoahmpIO%HGT_URB2D  ,     "HGT_URB2D"  , "" , "" ) 
                call add_to_output(     NoahmpIO%MH_URB2D  ,      "MH_URB2D"  , "" , "" )
                call add_to_output(   NoahmpIO%STDH_URB2D  ,    "STDH_URB2D"  , "" , "" )
+               call add_to_output(  NoahmpIO%URBLANDUSEF  ,   "URBLANDUSEF"  , "" , "" )         ! xue.lingbo 2026.01.28
                   
                if ( NoahmpIO%SF_URBAN_PHYSICS == 1 ) then  ! single layer urban model  
                   call add_to_output(NoahmpIO%TH2_URB2D   ,     "TH2_URB2D"  , "" , "" )
@@ -1550,6 +1552,7 @@ subroutine lsm_restart()
   call add_to_restart(NoahmpIO%LAI       , "LAI"   )
   call add_to_restart(NoahmpIO%XSAIXY    , "SAI"   )
   call add_to_restart(NoahmpIO%VEGFRA    , "VEGFRA")
+  call add_to_restart(NoahmpIO%URBLANDUSEF, "URBLANDUSEF")                              ! xue.lingbo 2026.01.28
   call add_to_restart(NoahmpIO%GVFMIN    , "GVFMIN")
   call add_to_restart(NoahmpIO%GVFMAX    , "GVFMAX")
   call add_to_restart(NoahmpIO%ACSNOM    , "ACMELT")

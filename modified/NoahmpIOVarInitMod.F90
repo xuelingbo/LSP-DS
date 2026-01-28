@@ -44,6 +44,7 @@ contains
     if ( .not. allocated (NoahmpIO%IVGTYP)    ) allocate ( NoahmpIO%IVGTYP     (XSTART:XEND,        YSTART:YEND) ) ! vegetation type
     if ( .not. allocated (NoahmpIO%ISLTYP)    ) allocate ( NoahmpIO%ISLTYP     (XSTART:XEND,        YSTART:YEND) ) ! soil type
     if ( .not. allocated (NoahmpIO%VEGFRA)    ) allocate ( NoahmpIO%VEGFRA     (XSTART:XEND,        YSTART:YEND) ) ! vegetation fraction []
+    if ( .not. allocated (NoahmpIO%URBLANDUSEF)) allocate( NoahmpIO%URBLANDUSEF(XSTART:XEND,        YSTART:YEND) ) ! urban land use fraction []     ! xue.lingbo 2026.01.28
     if ( .not. allocated (NoahmpIO%TMN)       ) allocate ( NoahmpIO%TMN        (XSTART:XEND,        YSTART:YEND) ) ! deep soil temperature [K]
     if ( .not. allocated (NoahmpIO%XLAND)     ) allocate ( NoahmpIO%XLAND      (XSTART:XEND,        YSTART:YEND) ) ! =2 ocean; =1 land/seaice
     if ( .not. allocated (NoahmpIO%XICE)      ) allocate ( NoahmpIO%XICE       (XSTART:XEND,        YSTART:YEND) ) ! fraction of grid that is seaice
@@ -480,6 +481,7 @@ contains
     NoahmpIO%DZS             = undefined_real
     NoahmpIO%ZSOIL           = undefined_real
     NoahmpIO%VEGFRA          = undefined_real
+    NoahmpIO%URBLANDUSEF     = undefined_real         ! xue.lingbo 2026.01.28
     NoahmpIO%TMN             = undefined_real
     NoahmpIO%XLAND           = undefined_real
     NoahmpIO%XICE            = undefined_real
