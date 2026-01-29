@@ -6,3 +6,5 @@
            when sf_urban_physics ==1;     TRAD = Weighted average of TRAD_nonUrban and TRAD_Urban
                                           TSK  = Weighted average of TSK_nonUrban and TSK_Urban
                                           (TRAD_nonUrban == TSK_nonUrban)
+2026.01.18 Read URBLANDUSEF from HRLDAS SETUP FILE
+           Use  FRC_URB*URBLANDUSEF as urban fraction
