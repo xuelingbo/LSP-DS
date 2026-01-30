@@ -33,7 +33,7 @@ Noah-MP model GitHub repository: https://github.com/NCAR/noahmp
 
 ```bash
 conda env create -f environment.yml
-conda activate hrldas`
+conda activate hrldas
 ```
 
 ## 3. Modify the Source Code
@@ -48,7 +48,7 @@ This command will copy the modified files and cover the original one.
 
 ```bash
 cd LSP-DS/hrldas/hrldas/
-cp ./user_build_options.mpi user_build_options
+cp ../../user_build_options.mpi user_build_options
 make
 ```
 
