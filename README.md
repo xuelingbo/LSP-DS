@@ -32,6 +32,7 @@ Noah-MP model GitHub repository: https://github.com/NCAR/noahmp
 ## 2. Recreate Environment from YAML
 
 ```bash
+cd LSP-DS
 conda env create -f environment.yml
 conda activate hrldas
 ```
@@ -47,7 +48,7 @@ This command will copy the modified files and cover the original one.
 ## 4. Compile HRLDAS
 
 ```bash
-cd LSP-DS/hrldas/hrldas/
+cd hrldas/hrldas/
 cp ../../user_build_options.mpi user_build_options
 make
 ```
