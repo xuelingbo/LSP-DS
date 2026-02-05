@@ -1,0 +1,19 @@
+var_id,table_id,frequency,wps_name,scale,units,note
+ta,6hrPlevPt,6hrPt,TT,,K
+ua,6hrPlevPt,6hrPt,UU,,m s-1
+va,6hrPlevPt,6hrPt,VV,,m s-1
+hus,6hrPlevPt,6hrPt,SPECHUMD,1,kg kg-1
+zg,6hrPlevPt,6hrPt,GHT,,m
+ps,6hrLev,6hrPt,PSFC,,Pa
+psl,6hrPlevPt,6hrPt,PMSL,,Pa
+ts,6hrPlevPt,6hrPt,SKINTEMP,,K
+mrsos,3hr,3hrPt,SM000010,0.01,m3 m-3,"Soil moisture (kg/m2 to m3/m3). See https://ldas.gsfc.nasa.gov/faq/LDAS"
+mrsos,,,SM010200,0.01,m3 m-3,Substitute for deeper layer soil moisture
+tsl,6hrPlevPt,6hrPt,ST000010,,K,Soil temperature
+tsl,,,ST010200,,K,Soil temperature. Use as a substitute for deep soil temperature
+orog,fx,fx,SOILHGT,,m,Surface orography
+tas,3hr,3hrPt,TT,,K,Near-surface air temperature
+uas,3hr,3hrPt,UU,,m s-1
+vas,3hr,3hrPt,VV,,m s-1
+huss,3hr,3hrPt,SPECHUMD,1,kg kg-1,Near-surface specific humidity
+sftlf,fx,fx,LANDSEA,0.01,fraction,"Land-sea mask (0=water, 1=land)"

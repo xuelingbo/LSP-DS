@@ -31,4 +31,10 @@ conda install -c conda-forge cfgrib eccodes
 
 conda install -c conda-forge cdsapi
 
+conda install -c conda-forge parallel -y
+
+conda install -c conda-forge esgf-pyclient -y
+
+conda install -c conda-forge typed-argument-parser -y
+
 git clone --recurse-submodules https://github.com/xuelingbo/LSP-DS
