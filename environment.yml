@@ -251,7 +251,7 @@ dependencies:
   - snuggs=1.4.7=pyhd3eb1b0_0
   - spdlog=1.14.1=hed91bc2_1
   - sqlite=3.51.1=he0a8d7e_0
-  - sysroot_linux-64=2.39=hc4b9eeb_5
+  - sysroot_linux-64
   - tiledb=2.24.2=h86fa3b2_12
   - tk=8.6.15=h54e0aa7_0
   - tornado=6.5.4=py312h961da02_0
