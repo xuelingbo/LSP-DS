@@ -1,4 +1,4 @@
-name: hrldas
+name: hrldas-gfs
 channels:
   - defaults
   - conda-forge
@@ -7,6 +7,7 @@ dependencies:
   - _openmp_mutex=5.1=1_gnu
   - affine=2.4.0=py312h06a4308_0
   - alsa-lib=1.2.15.3=hb03c661_0
+  - aom=3.9.1=hac33072_0
   - attr=2.5.2=h39aace5_0
   - attrs=25.4.0=py312h06a4308_2
   - aws-c-auth=0.7.30=hec5e740_0
@@ -37,12 +38,12 @@ dependencies:
   - bzip2=1.0.8=h5eee18b_6
   - c-ares=1.34.6=hb03c661_0
   - c-compiler=1.11.0=h4d9bdce_0
-  - ca-certificates=2026.1.4=hbd8a1cb_0
+  - ca-certificates=2026.2.25=hbd8a1cb_0
   - cached-property=1.5.2=hd8ed1ab_1
   - cached_property=1.5.2=pyha770c72_1
   - cairo=1.18.0=hbb29018_2
   - cdsapi=0.7.7=pyhd8ed1ab_0
-  - certifi=2026.1.4=pyhd8ed1ab_0
+  - certifi=2026.2.25=pyhd8ed1ab_0
   - cffi=1.17.1=py312h06ac9bb_0
   - cfgrib=0.9.15.1=pyhd8ed1ab_0
   - cfitsio=4.4.1=ha728647_2
@@ -56,11 +57,13 @@ dependencies:
   - conda-gcc-specs=14.3.0=he8ccf15_16
   - contourpy=1.3.3=py312hd9148b4_3
   - cycler=0.12.1=pyhcf101f3_2
+  - dav1d=1.2.1=hd590300_0
   - dbus=1.13.6=h5008d03_3
   - double-conversion=3.3.1=h5888daf_0
   - eccodes=2.41.0=h8bb6dbc_0
   - ecmwf-datastores-client=0.4.1=pyhd8ed1ab_0
   - expat=2.7.3=h7354ed3_4
+  - ffmpeg=7.1.0=gpl_he2fd91e_701
   - findlibs=0.1.2=pyhd8ed1ab_0
   - fmt=11.0.2=h07f6e7f_1
   - font-ttf-dejavu-sans-mono=2.37=hab24e00_0
@@ -75,6 +78,7 @@ dependencies:
   - freeglut=3.2.2=ha6d2627_3
   - freetype=2.14.1=ha770c72_0
   - freexl=2.0.0=hf309648_0
+  - fribidi=1.0.16=hb03c661_0
   - gcc=14.3.0=h76bdaa0_7
   - gcc_impl_linux-64=14.3.0=hd9e9e21_7
   - gcc_linux-64=14.3.0=h298d278_17
@@ -87,6 +91,7 @@ dependencies:
   - gfortran_linux-64=14.3.0=h9ce9316_17
   - giflib=5.2.2=h5eee18b_0
   - git=2.45.2=pl5321he096aa3_0
+  - gmp=6.3.0=hac33072_2
   - graphite2=1.3.14=hecca717_2
   - h2=4.3.0=pyhcf101f3_0
   - h5py=3.13.0=nompi_py312hedeef09_100
@@ -104,6 +109,7 @@ dependencies:
   - keyutils=1.6.3=hb9d3cd8_0
   - kiwisolver=1.4.9=py312h0a2e395_2
   - krb5=1.21.3=h659f571_0
+  - lame=3.100=h166bdaf_1003
   - lcms2=2.16=hb7c19ff_0
   - ld_impl_linux-64=2.44=h153f514_2
   - lerc=4.0.0=h0aef613_1
@@ -112,6 +118,7 @@ dependencies:
   - libarchive=3.7.7=hfab0078_0
   - libasprintf=0.25.1=h3f43e3d_1
   - libasprintf-devel=0.25.1=h3f43e3d_1
+  - libass=0.17.3=h1dc1e6a_0
   - libblas=3.11.0=5_h4a7cf45_openblas
   - libbrotlicommon=1.2.0=hb03c661_1
   - libbrotlidec=1.2.0=hb03c661_1
@@ -165,6 +172,20 @@ dependencies:
   - libnsl=2.0.1=hb9d3cd8_1
   - libopenblas=0.3.30=pthreads_h94d23a6_4
   - libopengl=1.7.0=ha4b6fd6_2
+  - libopenvino=2024.4.0=hac27bb2_0
+  - libopenvino-auto-batch-plugin=2024.4.0=h4d9b6c2_0
+  - libopenvino-auto-plugin=2024.4.0=h4d9b6c2_0
+  - libopenvino-hetero-plugin=2024.4.0=h3f63f65_0
+  - libopenvino-intel-cpu-plugin=2024.4.0=hac27bb2_0
+  - libopenvino-intel-gpu-plugin=2024.4.0=hac27bb2_0
+  - libopenvino-intel-npu-plugin=2024.4.0=hac27bb2_0
+  - libopenvino-ir-frontend=2024.4.0=h3f63f65_0
+  - libopenvino-onnx-frontend=2024.4.0=h56242b0_0
+  - libopenvino-paddle-frontend=2024.4.0=h56242b0_0
+  - libopenvino-pytorch-frontend=2024.4.0=h5888daf_0
+  - libopenvino-tensorflow-frontend=2024.4.0=h358ae18_0
+  - libopenvino-tensorflow-lite-frontend=2024.4.0=h5888daf_0
+  - libopus=1.6.1=h280c20c_0
   - libpciaccess=0.18=hb9d3cd8_0
   - libpmix=5.0.8=h4bd6b51_2
   - libpng=1.6.54=h421ea60_0
@@ -183,6 +204,8 @@ dependencies:
   - libudunits2=2.2.28=h40f5838_3
   - libuuid=2.41.3=h5347b49_0
   - libuv=1.51.0=hb03c661_1
+  - libva=2.22.0=h4f16b4b_2
+  - libvpx=1.14.1=hac33072_0
   - libwebp-base=1.6.0=hd42ef1d_0
   - libxcb=1.17.0=h9b100fa_0
   - libxcrypt=4.4.36=hd590300_1
@@ -208,9 +231,12 @@ dependencies:
   - nspr=4.37=h8459abe_0
   - nss=3.117=h3135ca0_0
   - numpy=2.4.1=py312h33ff503_0
+  - ocl-icd=2.3.3=hb9d3cd8_0
+  - opencl-headers=2025.06.13=hecca717_0
+  - openh264=2.4.1=h59595ed_0
   - openjpeg=2.5.2=he7f1fd0_0
   - openmpi=5.0.8=h2fe1745_110
-  - openssl=3.6.0=h26f9b46_0
+  - openssl=3.6.1=h35e630c_1
   - packaging=25.0=pyh29332c3_1
   - pandas=2.3.3=py312hf79963d_1
   - pcre2=10.43=hcad00b1_0
@@ -223,6 +249,7 @@ dependencies:
   - postgresql=16.10=hd526058_1
   - proj=9.4.1=h54d7996_1
   - pthread-stubs=0.3=h0ce48e5_1
+  - pugixml=1.14=h59595ed_0
   - pycparser=2.22=pyh29332c3_1
   - pyparsing=3.3.1=pyhcf101f3_0
   - pyproj=3.6.1=py312h9211aeb_9
@@ -251,7 +278,9 @@ dependencies:
   - snuggs=1.4.7=pyhd3eb1b0_0
   - spdlog=1.14.1=hed91bc2_1
   - sqlite=3.51.1=he0a8d7e_0
-  - sysroot_linux-64
+  - svt-av1=2.2.1=h5888daf_0
+  - sysroot_linux-64=2.39=hc4b9eeb_5
+  - tbb=2022.3.0=h8d10470_1
   - tiledb=2.24.2=h86fa3b2_12
   - tk=8.6.15=h54e0aa7_0
   - tornado=6.5.4=py312h961da02_0
@@ -266,7 +295,10 @@ dependencies:
   - uriparser=0.9.8=h451ca9b_0
   - urllib3=2.6.3=pyhd8ed1ab_0
   - wayland=1.23.1=h3e06ad9_0
+  - wayland-protocols=1.47=hd8ed1ab_0
   - wheel=0.45.1=py312h06a4308_0
+  - x264=1!164.3095=h166bdaf_2
+  - x265=3.5=h924138e_3
   - xarray=2025.12.0=pyhcf101f3_0
   - xcb-util=0.4.1=h4f16b4b_2
   - xcb-util-cursor=0.1.6=hb03c661_0
@@ -293,4 +325,12 @@ dependencies:
   - xz=5.6.4=h5eee18b_1
   - zlib=1.3.1=hb25bd0a_0
   - zstd=1.5.7=hb78ec9c_6
-prefix: /home/lingbo/miniconda3/envs/hrldas
+  - pip:
+      - boto3==1.42.75
+      - botocore==1.42.75
+      - jmespath==1.1.0
+      - narwhals==2.18.1
+      - plotly==6.6.0
+      - pyarrow==23.0.1
+      - s3transfer==0.16.0
+prefix: /home/xuelingbo/miniconda3/envs/hrldas-gfs

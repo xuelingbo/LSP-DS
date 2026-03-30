@@ -311,7 +311,7 @@ def create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em_f
 
     setup_file.attrs = geo_em.attrs
 
-    output_filename = f"HRLDAS_setup_{pd.to_datetime(start_date).strftime('%Y%m%d')}00_d{geo_em_file[-4]}"
+    output_filename = f"HRLDAS_setup_{pd.to_datetime(start_date).strftime('%Y%m%d')}01_d{geo_em_file[-4]}"
     
     setup_file.to_netcdf(os.path.join(output_dir, 'LDASIN', output_filename))
 
@@ -365,7 +365,7 @@ if __name__ == '__main__':
     geo_em_file = '../hands-on/GFS/Tokyo/geo/geo_em.d01.nc'
 
     create_lai_vegfra(geo_em_file, output_dir)
-    create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em_file, lcz=1)
+    create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em_file, lcz=0)
 
     for fhour in range(1, n_days*24+1, 1):
         create_LDASIN_files(start_date, cycle_hour, fhour, raw_data_dir, output_dir, geo_em_file, upper_level_m)
