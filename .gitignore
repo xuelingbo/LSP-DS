@@ -4,3 +4,7 @@ hands-on/ERA5/Tokyo/LDASOUT
 hands-on/ERA5/YangtzeDelta/raw
 hands-on/ERA5/YangtzeDelta/LDASIN
 hands-on/ERA5/YangtzeDelta/LDASOUT
+
+hands-on/GFS/Tokyo/raw
+hands-on/GFS/Tokyo/LDASIN
+hands-on/GFS/Tokyo/LDASOUT
