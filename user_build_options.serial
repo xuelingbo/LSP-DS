@@ -10,12 +10,12 @@
  MODFLAG        =       -I
  LDFLAGS        =
  CPP            =       cpp
- CPPFLAGS       =       -P -traditional -D_GFORTRAN_ # -DSPATIAL_SOIL
+ CPPFLAGS       =       -P -traditional -DMPP_LAND -D_GFORTRAN_ -DWRFIO_NCD_LARGE_FILE_SUPPORT # -DSPATIAL_SOIL
  LIBS           =
  #LIBJASPER      =      -ljasper
  #INCJASPER      =      -I/usr/include/jasper
- NETCDFMOD      =      -I/home/lingbo/miniconda3/envs/hrldas/include
- NETCDFLIB      =      -L/home/lingbo/miniconda3/envs/hrldas/lib -lnetcdf -lnetcdff
+ NETCDFMOD      =      -I/home/xuelingbo/miniconda3/envs/hrldas/include
+ NETCDFLIB      =      -L/home/xuelingbo/miniconda3/envs/hrldas/lib -lnetcdf -lnetcdff
  BZIP2          =       NO
 # BZIP2_INCLUDE  =       -I/usr/include
 # BZIP2_LIB      =       -L/usr/lib64 -lbz2
