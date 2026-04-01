@@ -34,7 +34,7 @@ Noah-MP model GitHub repository: https://github.com/NCAR/noahmp
 ```bash
 cd LSP-DS
 conda env create -f environment.yml
-conda activate hrldas
+conda activate hrldas-gfs
 ```
 
 ## 3. Modify the Source Code
