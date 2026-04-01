@@ -34,9 +34,9 @@ from datetime import datetime, timedelta
 start_dt = datetime(2026, 3, 31,  1)
 end_dt   = datetime(2026, 4, 5,  0)
 
-ldasout_dir = f"/home/xuelingbo/LSP-DS/hands-on/GFS/Tokyo/LDASOUT/{start_dt.strftime('%Y%m%d')}"
-geo_file    = "/home/xuelingbo/LSP-DS/hands-on/GFS/Tokyo/geo/geo_em.d03.nc"
-output_dir  = "/home/xuelingbo/LSP-DS/hands-on/GFS/Tokyo/figures/"
+ldasout_dir = f"../hands-on/GFS/Tokyo/LDASOUT/{start_dt.strftime('%Y%m%d')}"
+geo_file    = "../hands-on/GFS/Tokyo/geo/geo_em.d03.nc"
+output_dir  = "../hands-on/GFS/Tokyo/figures/"
 var_name    = "RH2"       # HRLDAS variable name (e.g. T2, RH2)
 output_fmt  = "mp4"      # "gif" or "mp4"
 output_name = f"HRLDAS_{var_name}"
