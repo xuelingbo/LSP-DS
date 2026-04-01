@@ -23,8 +23,8 @@ import matplotlib.pyplot as plot
 
 def create_LDASIN_files(start_date, cycle_hour, fhour, raw_data_dir, output_dir, geo_em_file, upper_level_m):
     
-    if not os.path.exists(output_dir+"/LDASIN"):
-        os.makedirs(output_dir+"/LDASIN")
+    if not os.path.exists(output_dir+"/LDASIN/"+start_date.replace("-", "")):
+        os.makedirs(output_dir+"/LDASIN/"+start_date.replace("-", ""))
 
     time = pd.to_datetime(start_date) + pd.Timedelta(hours=fhour)
 
@@ -92,23 +92,23 @@ def create_LDASIN_files(start_date, cycle_hour, fhour, raw_data_dir, output_dir,
             LDASIN_file[vars[var]['name']].attrs['units'] = vars[var]['attrs']['units']
         elif vars[var]['name'] in ['LAI', 'VEGFRA']:
             if pd.to_datetime(start_date).is_leap_year:
-                raw_data_file = xr.open_dataset(os.path.join(output_dir,'LDASIN', f'{var}_leap.nc'))
+                raw_data_file = xr.open_dataset(os.path.join(output_dir,'LDASIN', start_date.replace("-", ""), f'{var}_leap.nc'))
                 data_var = [raw_data_file[var].sel(date='2020'+start_date[-6:]).values]
             else:
-                raw_data_file = xr.open_dataset(os.path.join(output_dir,'LDASIN', f'{var}.nc'))
+                raw_data_file = xr.open_dataset(os.path.join(output_dir,'LDASIN', start_date.replace("-", ""), f'{var}.nc'))
                 data_var = [raw_data_file[var].sel(date='2021'+start_date[-6:]).values]
             LDASIN_file[vars[var]['name']] = (('Time','south_north','west_east'), data_var)
             LDASIN_file[vars[var]['name']].attrs['units'] = vars[var]['attrs']['units']
 
     encoding=[{var: {'_FillValue': None}} for var in LDASIN_file.variables]    
     output_filename = f"{time.strftime('%Y%m%d%H')}.LDASIN_DOMAIN{geo_em_file[-4]}"
-    LDASIN_file.to_netcdf(os.path.join(output_dir, 'LDASIN', output_filename), encoding=encoding[0])
+    LDASIN_file.to_netcdf(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), output_filename), encoding=encoding[0])
     print(output_filename)
                         
 def create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em_file, lcz=0):
     
-    if not os.path.exists(output_dir+"/LDASIN"):
-        os.makedirs(output_dir+"/LDASIN")
+    if not os.path.exists(output_dir+"/LDASIN/"+start_date.replace("-", "")):
+        os.makedirs(output_dir+"/LDASIN/"+start_date.replace("-", ""))
 
     variables = {
     
@@ -154,9 +154,9 @@ def create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em_f
     water_mask = (geo_em.LU_INDEX.values[0] == iswater) | (geo_em.LU_INDEX.values[0] == islake)
 
     if pd.Timestamp(start_date).is_leap_year:
-        LAI = xr.open_dataset(os.path.join(output_dir, 'LDASIN', 'LAI12M_leap.nc'))
+        LAI = xr.open_dataset(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), 'LAI12M_leap.nc'))
     else:
-        LAI = xr.open_dataset(os.path.join(output_dir, 'LDASIN', 'LAI12M.nc'))
+        LAI = xr.open_dataset(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), 'LAI12M.nc'))
 
 
     raw_data_path = os.path.join(raw_data_dir, f'gfs.t{cycle_hour}z.pgrb2.0p25.setup.grb2')
@@ -313,12 +313,12 @@ def create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em_f
 
     output_filename = f"HRLDAS_setup_{pd.to_datetime(start_date).strftime('%Y%m%d')}01_d{geo_em_file[-4]}"
     
-    setup_file.to_netcdf(os.path.join(output_dir, 'LDASIN', output_filename))
+    setup_file.to_netcdf(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), output_filename))
 
-def create_lai_vegfra(geo_em_file, output_dir):
+def create_lai_vegfra(geo_em_file, output_dir, start_date):
 
-    if not os.path.exists(output_dir+"/LDASIN"):
-        os.makedirs(output_dir+"/LDASIN")
+    if not os.path.exists(output_dir+"/LDASIN/"+start_date.replace("-", "")):
+        os.makedirs(output_dir+"/LDASIN/"+start_date.replace("-", ""))
 
     for var in ('LAI12M', 'GREENFRAC'):
 
@@ -346,25 +346,25 @@ def create_lai_vegfra(geo_em_file, output_dir):
         LAI[var] = xr.where(mask, 0, LAI[var])
 
         if var=='LAI12M':
-            LAI.sel(date=slice('2020-01-01','2020-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', 'LAI12M_leap.nc'))
-            LAI.sel(date=slice('2021-01-01','2021-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', 'LAI12M.nc'))
+            LAI.sel(date=slice('2020-01-01','2020-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), 'LAI12M_leap.nc'))
+            LAI.sel(date=slice('2021-01-01','2021-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), 'LAI12M.nc'))
         else:
-            LAI.sel(date=slice('2020-01-01','2020-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', 'GREENFRAC_leap.nc'))
-            LAI.sel(date=slice('2021-01-01','2021-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', 'GREENFRAC.nc'))
+            LAI.sel(date=slice('2020-01-01','2020-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), 'GREENFRAC_leap.nc'))
+            LAI.sel(date=slice('2021-01-01','2021-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), 'GREENFRAC.nc'))
 
 
 if __name__ == '__main__':
 
-    start_date = '2026-03-26'
+    start_date = '2026-03-31'
     n_days = 5
     cycle_hour    = '00'
     upper_level_m = 50
 
-    raw_data_dir = '../hands-on/GFS/Tokyo/raw/'
+    raw_data_dir = f'../hands-on/GFS/Tokyo/raw/{start_date.replace("-","")}'
     output_dir = '../hands-on/GFS/Tokyo/'
     geo_em_file = '../hands-on/GFS/Tokyo/geo/geo_em.d01.nc'
 
-    create_lai_vegfra(geo_em_file, output_dir)
+    create_lai_vegfra(geo_em_file, output_dir, start_date)
     create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em_file, lcz=0)
 
     for fhour in range(1, n_days*24+1, 1):

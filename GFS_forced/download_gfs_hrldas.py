@@ -227,7 +227,7 @@ if __name__ == "__main__":
     # ------------------------------------------------------------------ #
     # User settings
     # ------------------------------------------------------------------ #
-    date       = "20260326"        # YYYYMMDD
+    date       = "20260331"        # YYYYMMDD
     cycle_hour = "00"              # GFS cycle: "00", "06", "12", "18"
     n_days     = 20                         # number of forecast days
     interval   = 1                         # forecast hour interval (1 or 3)
@@ -244,7 +244,7 @@ if __name__ == "__main__":
     }
 
     upper_level = "1000_mb"  # e.g. "1000_mb"
-    output_dir  = f'../hands-on/GFS/Tokyo/raw/'
+    output_dir  = f'../hands-on/GFS/Tokyo/raw/{date}'
     # ------------------------------------------------------------------ #
 
     download_gfs_setup(date, cycle_hour, output_dir, subregion=subregion)
