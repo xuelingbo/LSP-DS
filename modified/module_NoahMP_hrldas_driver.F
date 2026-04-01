@@ -1417,7 +1417,8 @@ contains
            call lsm_restart()
         endif
      endif
-     if (NoahmpIO%restart_frequency_hours <= 0) then
+   !   if (NoahmpIO%restart_frequency_hours <= 0) then
+     if (NoahmpIO%restart_frequency_hours < 0) then           ! if 0, no restarts xue.lingbo 2026.01.28
         if ((NoahmpIO%olddate( 9:10) == "01") .and. (NoahmpIO%olddate(12:13) == "00") .and. &
             (NoahmpIO%olddate(15:16) == "00") .and. (NoahmpIO%olddate(18:19) == "00")) then
             call lsm_restart()  ! jlm - i moved all the restart code to a subroutine. 
