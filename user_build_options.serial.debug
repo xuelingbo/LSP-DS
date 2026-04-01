@@ -14,8 +14,8 @@
  LIBS           =
  #LIBJASPER      =      -ljasper
  #INCJASPER      =      -I/usr/include/jasper
- NETCDFMOD      =      -I/home/lingbo/miniconda3/envs/hrldas-gfs/include
- NETCDFLIB      =      -L/home/lingbo/miniconda3/envs/hrldas-gfs/lib -lnetcdf -lnetcdff
+ NETCDFMOD      =      -I/home/xuelingbo/miniconda3/envs/hrldas-gfs/include
+ NETCDFLIB      =      -L/home/xuelingbo/miniconda3/envs/hrldas-gfs/lib -lnetcdf -lnetcdff
  BZIP2          =       NO
 # BZIP2_INCLUDE  =       -I/usr/include
 # BZIP2_LIB      =       -L/usr/lib64 -lbz2
