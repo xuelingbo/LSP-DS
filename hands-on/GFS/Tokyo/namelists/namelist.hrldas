@@ -1,6 +1,6 @@
 &NOAHLSM_OFFLINE
 
- HRLDAS_SETUP_FILE = "/home/xuelingbo/LSP-DS/hands-on/GFS/Tokyo/LDASIN/20260331/HRLDAS_setup_2026033101_d1"
+ HRLDAS_SETUP_FILE = "/home/xuelingbo/LSP-DS/hands-on/GFS/Tokyo/LDASIN/20260331/HRLDAS_setup_2026033101_d3"
  INDIR = "/home/xuelingbo/LSP-DS/hands-on/GFS/Tokyo/LDASIN/20260331/"
  OUTDIR = "/home/xuelingbo/LSP-DS/hands-on/GFS/Tokyo/LDASOUT/20260331/"
 

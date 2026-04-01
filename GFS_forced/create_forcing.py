@@ -362,7 +362,7 @@ if __name__ == '__main__':
 
     raw_data_dir = f'../hands-on/GFS/Tokyo/raw/{start_date.replace("-","")}'
     output_dir = '../hands-on/GFS/Tokyo/'
-    geo_em_file = '../hands-on/GFS/Tokyo/geo/geo_em.d01.nc'
+    geo_em_file = '../hands-on/GFS/Tokyo/geo/geo_em.d03.nc'
 
     create_lai_vegfra(geo_em_file, output_dir, start_date)
     create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em_file, lcz=0)

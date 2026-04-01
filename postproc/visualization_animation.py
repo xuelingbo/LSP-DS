@@ -9,7 +9,7 @@
 #######################################################################
 # Plot a HRLDAS LDASOUT variable and export as GIF or MP4.
 #
-# File naming: YYYYMMDDHH.LDASOUT_DOMAIN1
+# File naming: YYYYMMDDHH.LDASOUT_DOMAIN3
 # Coordinates: read from geo_em.d01.nc (XLAT_M / XLONG_M)
 #######################################################################
 
@@ -35,9 +35,9 @@ start_dt = datetime(2026, 3, 31,  1)
 end_dt   = datetime(2026, 4, 5,  0)
 
 ldasout_dir = f"/home/xuelingbo/LSP-DS/hands-on/GFS/Tokyo/LDASOUT/{start_dt.strftime('%Y%m%d')}"
-geo_file    = "/home/xuelingbo/LSP-DS/hands-on/GFS/Tokyo/geo/geo_em.d01.nc"
+geo_file    = "/home/xuelingbo/LSP-DS/hands-on/GFS/Tokyo/geo/geo_em.d03.nc"
 output_dir  = "/home/xuelingbo/LSP-DS/hands-on/GFS/Tokyo/figures/"
-var_name    = "T2"       # HRLDAS variable name (e.g. T2, RH2)
+var_name    = "RH2"       # HRLDAS variable name (e.g. T2, RH2)
 output_fmt  = "mp4"      # "gif" or "mp4"
 output_name = f"HRLDAS_{var_name}"
 
@@ -62,12 +62,12 @@ level_idx = 0   # 0 = top soil layer
 
 def get_ldasout_files(ldasout_dir, start_dt, end_dt):
     """Return sorted LDASOUT files within the date range."""
-    files = sorted(glob.glob(os.path.join(ldasout_dir, "*.LDASOUT_DOMAIN1")))
+    files = sorted(glob.glob(os.path.join(ldasout_dir, "*.LDASOUT_DOMAIN3")))
     if not (start_dt or end_dt):
         return files
     filtered = []
     for f in files:
-        tag = os.path.basename(f).replace(".LDASOUT_DOMAIN1", "")
+        tag = os.path.basename(f).replace(".LDASOUT_DOMAIN3", "")
         try:
             dt = datetime.strptime(tag, "%Y%m%d%H")
         except ValueError:
@@ -210,7 +210,7 @@ def main():
         if i == 0:
             continue
         print(f"  [{i+1}/{len(files)}] {os.path.basename(f)}")
-        tag    = os.path.basename(f).replace(".LDASOUT_DOMAIN1", "")
+        tag    = os.path.basename(f).replace(".LDASOUT_DOMAIN3", "")
         utc_dt = datetime.strptime(tag, "%Y%m%d%H")
         loc_dt = utc_dt + timedelta(hours=utc_offset)
         tz_label = f"UTC+{utc_offset}" if utc_offset >= 0 else f"UTC{utc_offset}"
