@@ -132,7 +132,7 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
             LDASIN_file.to_netcdf(os.path.join(output_dir, 'LDASIN', output_filename), encoding=encoding[0])
             print(output_filename)
                         
-def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file):
+def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file, lcz=0):
     
     if not os.path.exists(output_dir+"/LDASIN"):
         os.makedirs(output_dir+"/LDASIN")
@@ -219,10 +219,13 @@ def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file):
             data_var = geo_em[variables[var]['geoname']].values
         
         elif var == 'URBLANDUSEF':
-            data_var = geo_em[variables[var]['geoname']].sel(land_cat=12).values       # urban
-            # if unresonable values appear, set them to 0
-            data_var[data_var < 0] = 0              
-            data_var[data_var > 1] = 0
+            if lcz==0:
+                data_var = geo_em[variables[var]['geoname']].sel(land_cat=12).values       # urban
+                # if unresonable values appear, set them to 0
+                data_var[data_var < 0] = 0              
+                data_var[data_var > 1] = 0
+            else:
+                data_var = np.ones_like(geo_em[variables[var]['geoname']].sel(land_cat=0).values)
         
         #######################
         # edit from geo_em file
@@ -358,9 +361,6 @@ if __name__ == '__main__':
     raw_data_dir = '../hands-on/ERA5/YangtzeDelta/raw/'
     output_dir = '../hands-on/ERA5/YangtzeDelta/'
     geo_em_file = '../hands-on/ERA5/YangtzeDelta/geo/geo_em.d01.nc'
-    # raw_data_dir = '../hands-on/ERA5/YangtzeDelta/raw/'
-    # output_dir = '../hands-on/ERA5/Tokyo/'
-    # geo_em_file = '../hands-on/ERA5/Tokyo/geo/geo_em.d02.nc'
     levelist = '136'
     ZLVL = 30
 
@@ -370,7 +370,7 @@ if __name__ == '__main__':
 
         create_setup_file(f'{str(year)}-{loop_start_date}', \
                           raw_data_dir, output_dir, \
-                          geo_em_file)
+                          geo_em_file, lcz=0)
 
         create_LDASIN_files(f'{str(year)}-{loop_start_date}', f'{str(year)}-{loop_end_date}', \
                             raw_data_dir, output_dir, \
