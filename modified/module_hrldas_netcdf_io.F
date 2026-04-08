@@ -29,6 +29,7 @@ module module_hrldas_netcdf_io
      real, pointer, dimension(:,:) :: snow
      real, pointer, dimension(:,:) :: vegfra
      real, pointer, dimension(:,:) :: lai
+     real, pointer, dimension(:,:) :: ahe             ! xue.lingbo 2026/04/08
   end type inputstruct
 
   character(len=256), private :: restart_filename_remember
@@ -2054,8 +2055,8 @@ contains
 
   subroutine READFORC_HRLDAS(flnm_template, forcing_timestep, target_date, xstart, xend, ystart, yend,  &
        forcing_name_T,forcing_name_Q,forcing_name_U,forcing_name_V,forcing_name_P, &
-       forcing_name_LW,forcing_name_SW,forcing_name_PR,forcing_name_SN, &
-       t,q,u,v,p,lw,sw,pcp,snow,vegfra,update_veg,lai,update_lai,reset_spinup_date,startdate)
+       forcing_name_LW,forcing_name_SW,forcing_name_PR,forcing_name_SN,forcing_name_AHE, &         ! xue.lingbo 2026/04/08
+       t,q,u,v,p,lw,sw,pcp,snow,vegfra,ahe,update_veg,lai,update_lai,reset_spinup_date,startdate)  ! xue.lingbo 2026/04/08
     use kwm_string_utilities
     implicit none
 
@@ -2073,6 +2074,7 @@ contains
     character(len=256),                 intent(in)  :: forcing_name_SW
     character(len=256),                 intent(in)  :: forcing_name_PR
     character(len=256),                 intent(in)  :: forcing_name_SN
+    character(len=256),                 intent(in)  :: forcing_name_AHE                ! xue.lingbo 2026/04/08
 
     real,             dimension(xstart:xend,ystart:yend), intent(out)   :: t
     real,             dimension(xstart:xend,ystart:yend), intent(out)   :: q
@@ -2085,6 +2087,7 @@ contains
     real,             dimension(xstart:xend,ystart:yend), intent(out)   :: snow
     real,             dimension(xstart:xend,ystart:yend), intent(inout) :: lai    !Barlage v3.7: change to inout
     real,             dimension(xstart:xend,ystart:yend), intent(inout) :: vegfra
+    real,             dimension(xstart:xend,ystart:yend), intent(out)   :: ahe         ! xue.lingbo 2026/04/08
     logical,                            intent(in)  :: update_veg, update_lai  ! Barlage v3.7: for veg read control
     logical,                                              intent(inout) :: reset_spinup_date
 
@@ -2194,6 +2197,7 @@ contains
        call get_2d_netcdf(trim(forcing_name_LW), ncid, nextread%lw,    units, xstart, xend, ystart, yend, FATAL, ierr)
        call get_2d_netcdf(trim(forcing_name_SW), ncid, nextread%sw,    units, xstart, xend, ystart, yend, FATAL, ierr)
        call get_2d_netcdf(trim(forcing_name_PR), ncid, nextread%pcp,   units, xstart, xend, ystart, yend, FATAL, ierr)
+       call get_2d_netcdf(trim(forcing_name_AHE), ncid, nextread%ahe,  units, xstart, xend, ystart, yend, FATAL, ierr)  ! xue.lingbo 2026/04/08
        
        nextread%snow = 0.0  ! Assume zero in case not present
        call get_2d_netcdf(trim(forcing_name_SN), ncid, nextread%snow,  units, xstart, xend, ystart, yend, NOT_FATAL, ierr)
@@ -2250,7 +2254,7 @@ contains
        !
 
        ! Fill the t, q, u, v, ... arrays with data from the nextread structure.
-       call copyfrom_inputstruct(nextread, t, q, u, v, p, lw, sw, pcp, snow, vegfra, lai, &
+       call copyfrom_inputstruct(nextread, t, q, u, v, p, lw, sw, pcp, snow, vegfra, lai, ahe,&     ! xue.lingbo 2026/04/08
                                  update_veg, update_lai, xstart, xend, ystart, yend)
 
        ! Clear the old lastread data
@@ -2275,7 +2279,7 @@ contains
 
        ! Fill the t, q, u, v, ... arrays with data interpolated between lastread and nextread times.
        call interpolate_inputstruct(lastread, nextread, target_date, &
-            t, q, u, v, p, lw, sw, pcp, snow, vegfra, lai, update_veg, update_lai, xstart, xend, ystart, yend)
+            t, q, u, v, p, lw, sw, pcp, snow, vegfra, lai, ahe, update_veg, update_lai, xstart, xend, ystart, yend) ! xue.lingbo 2026/04/08
 
     else
 
@@ -2332,6 +2336,9 @@ contains
     allocate(instruct%vegfra(xstart:xend,ystart:yend), stat=allostat )
     if (allostat/=0) stop "Problem allocating instruct%vegfra"
 
+    allocate(instruct%ahe   (xstart:xend,ystart:yend), stat=allostat )          ! xue.lingbo 2026/04/08
+    if (allostat/=0) stop "Problem allocating instruct%ahe"
+
     allocate(instruct%lai (xstart:xend,ystart:yend), stat=allostat )
     if (allostat/=0) stop "Problem allocating instruct%lai"
 #ifdef MPP_LAND
@@ -2342,13 +2349,13 @@ contains
 !---------------------------------------------------------------------------------------------------------
 !---------------------------------------------------------------------------------------------------------
 
-  subroutine copyfrom_inputstruct(instruct, t, q, u, v, p, lw, sw, pcp, snow, vegfra, lai, &
+  subroutine copyfrom_inputstruct(instruct, t, q, u, v, p, lw, sw, pcp, snow, vegfra, lai, ahe, &       ! xue.lingbo 2026/04/08
                                   update_veg, update_lai, xstart, xend, ystart, yend)
     implicit none
     type(inputstruct), intent(in) :: instruct
     integer,           intent(in) :: xstart, xend, ystart, yend
     logical,           intent(in)  :: update_veg, update_lai  ! Barlage v3.7: for veg read control
-    real, dimension(xstart:xend,ystart:yend), intent(out) :: t, q, u, v, p, lw, sw, pcp, snow, vegfra, lai
+    real, dimension(xstart:xend,ystart:yend), intent(out) :: t, q, u, v, p, lw, sw, pcp, snow, vegfra, lai, ahe   ! xue.lingbo 2026/04/08
     t    = instruct%t
     q    = instruct%q
     u    = instruct%u
@@ -2358,6 +2365,7 @@ contains
     sw   = instruct%sw
     snow = instruct%snow
     pcp  = instruct%pcp
+    ahe  = instruct%ahe     ! xue.lingbo 2026/04/08
     if(update_veg) vegfra = instruct%vegfra
     if(update_lai)   lai  = instruct%lai
   end subroutine copyfrom_inputstruct
@@ -2366,13 +2374,13 @@ contains
 !---------------------------------------------------------------------------------------------------------
 
   subroutine interpolate_inputstruct(instructA, instructB, target_date, &
-       t, q, u, v, p, lw, sw, pcp, snow, vegfra, lai, update_veg, update_lai, xstart, xend, ystart, yend)
+       t, q, u, v, p, lw, sw, pcp, snow, vegfra, lai, ahe, update_veg, update_lai, xstart, xend, ystart, yend)  ! xue.lingbo 2026/04/08
     implicit none
     type(inputstruct),                        intent(in)  :: instructA, instructB
     character(len=19),                        intent(in)  :: target_date
     integer,                                  intent(in)  :: xstart, xend, ystart, yend
     logical,                                  intent(in)  :: update_veg, update_lai  ! Barlage v3.7: for veg read control
-    real, dimension(xstart:xend,ystart:yend), intent(out) :: t, q, u, v, p, lw, sw, pcp, snow, vegfra, lai
+    real, dimension(xstart:xend,ystart:yend), intent(out) :: t, q, u, v, p, lw, sw, pcp, snow, vegfra, lai, ahe  ! xue.lingbo 2026/04/08
 
     integer :: idts, idts2
     real    :: fraction
@@ -2388,6 +2396,7 @@ contains
     p  = ( instructA%p  * fraction ) + ( instructB%p  * (1.0-fraction) )
     lw = ( instructA%lw * fraction ) + ( instructB%lw * (1.0-fraction) )
     sw = ( instructA%sw * fraction ) + ( instructB%sw * (1.0-fraction) )
+    ahe = ( instructA%ahe * fraction ) + ( instructB%ahe * (1.0-fraction) )  ! xue.lingbo 2026/04/08
     snow = instructA%snow
     pcp = instructA%pcp
     if(update_veg) vegfra = instructA%vegfra
@@ -2454,6 +2463,11 @@ contains
     if (associated(instruct%lai)) then
        deallocate(instruct%lai)
        nullify(instruct%lai)
+
+    if (associated(instruct%ahe)) then           ! xue.lingbo 2026/04/08
+       deallocate(instruct%ahe)
+       nullify(instruct%ahe)
+
     endif
   end subroutine clear_inputstruct
 
@@ -2475,6 +2489,7 @@ contains
     nullify(instruct%snow)
     nullify(instruct%vegfra)
     nullify(instruct%lai)
+    nullify(instruct%ahe)   ! xue.lingbo 2026/04/08
   end subroutine nullify_inputstruct
 
 !---------------------------------------------------------------------------------------------------------

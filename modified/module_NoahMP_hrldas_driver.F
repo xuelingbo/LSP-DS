@@ -811,11 +811,15 @@ contains
                              NoahmpIO%forcing_name_U, NoahmpIO%forcing_name_V,       &
                              NoahmpIO%forcing_name_P, NoahmpIO%forcing_name_LW,      &
                              NoahmpIO%forcing_name_SW,NoahmpIO%forcing_name_PR,      &
-                             NoahmpIO%forcing_name_SN,NoahmpIO%T_PHY(:,1,:),         &
+                             NoahmpIO%forcing_name_SN,                               &
+                             NoahmpIO%forcing_name_AHE,                              &              ! xue.lingbo 2024/04/08
+                             NoahmpIO%T_PHY(:,1,:),                                  &
                              NoahmpIO%QV_CURR(:,1,:),NoahmpIO%U_PHY(:,1,:),          &
                              NoahmpIO%V_PHY(:,1,:),NoahmpIO%P8W(:,1,:), NoahmpIO%GLW,&
                              NoahmpIO%SWDOWN, NoahmpIO%RAINBL, NoahmpIO%SNOWBL,      &
-                             NoahmpIO%VEGFRA, NoahmpIO%update_veg, NoahmpIO%LAI,     &
+                             NoahmpIO%VEGFRA,                                        &
+                             NoahmpIO%AHE,                                           &              ! xue.lingbo 2024/04/08
+                             NoahmpIO%update_veg, NoahmpIO%LAI,                      &
                              NoahmpIO%update_lai, NoahmpIO%reset_spinup_date,        &
                              NoahmpIO%startdate)
                              
@@ -840,9 +844,12 @@ contains
                           NoahmpIO%forcing_name_T,NoahmpIO%forcing_name_Q,NoahmpIO%forcing_name_U,           &
                           NoahmpIO%forcing_name_V,NoahmpIO%forcing_name_P,NoahmpIO%forcing_name_LW,          &
                           NoahmpIO%forcing_name_SW,NoahmpIO%forcing_name_PR,NoahmpIO%forcing_name_SN,        &
+                          NoahmpIO%forcing_name_AHE,                                                         & ! xue.lingbo 2024/04/08
                           NoahmpIO%T_PHY(:,1,:),NoahmpIO%QV_CURR(:,1,:),NoahmpIO%U_PHY(:,1,:),               &
                           NoahmpIO%V_PHY(:,1,:),NoahmpIO%P8W(:,1,:), NoahmpIO%GLW, NoahmpIO%SWDOWN,          &
-                          NoahmpIO%RAINBL, NoahmpIO%SNOWBL, NoahmpIO%VEGFRA, NoahmpIO%update_veg,            &
+                          NoahmpIO%RAINBL, NoahmpIO%SNOWBL, NoahmpIO%VEGFRA,                                 &
+                          NoahmpIO%AHE,                                                                      & ! xue.lingbo 2024/04/08 
+                          NoahmpIO%update_veg,                                                               &
                           NoahmpIO%LAI, NoahmpIO%update_lai, NoahmpIO%reset_spinup_date, NoahmpIO%startdate)
           
        if(maxval(NoahmpIO%VEGFRA) <= 1 ) then
@@ -1030,6 +1037,7 @@ contains
                             NoahmpIO%flxhumr_urb2d, NoahmpIO%flxhumb_urb2d, NoahmpIO%flxhumg_urb2d,             & !H urban
                             NoahmpIO%julday, NoahmpIO%yr,                                                       & !H urban
                             NoahmpIO%FRC_URB2D, NoahmpIO%utype_urb2d, NoahmpIO%URBLANDUSEF,                     & !I urban          ! xue.lingbo 2026.01.28
+                            NoahmpIO%distributed_ahe_opt, NoahmpIO%AHE,                                         & !I urban          ! xue.lingbo 2026/04/08
                             NoahmpIO%chs, NoahmpIO%chs2, NoahmpIO%cqs2,                                          & !H
                             NoahmpIO%num_urban_ndm, NoahmpIO%urban_map_zrd, NoahmpIO%urban_map_zwd,             & !I multi-layer urban
                             NoahmpIO%urban_map_gd,                                                              & !I multi-layer urban 

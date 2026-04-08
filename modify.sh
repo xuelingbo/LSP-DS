@@ -8,3 +8,4 @@ cp ./modified/NoahmpUrbanDriverMainMod.F ./hrldas/urban/wrf/NoahmpUrbanDriverMai
 cp ./modified/module_sf_urban.F ./hrldas/urban/wrf/module_sf_urban.F
 cp ./modified/module_sf_bem.F ./hrldas/urban/wrf/module_sf_bem.F
 cp ./modified/module_hrldas_netcdf_io.F ./hrldas/hrldas/IO_code/module_hrldas_netcdf_io.F
+cp ./modified/NoahmpReadNamelistMod.F90 ./hrldas/noahmp/drivers/hrldas/NoahmpReadNamelistMod.F90

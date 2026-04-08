@@ -306,6 +306,8 @@ use module_wrf_error
                     UTYPE,TA,QA,UA,U1,V1,SSG,SSGD,SSGQ,LLG,RAIN,RHOO, & ! I
                     ZA,DECLIN,COSZ,OMG,XLAT,DELT,ZNT,                 & ! I
                     CHS, CHS2,                                        & ! I
+                    distributed_ahe_opt,                              & ! I  ! xue.lingbo 2026/04/08
+                    AHE,                                              & ! I  ! xue.lingbo 2026/04/08
                     TR, TB, TG, TC, QC, UC,                           & ! H
                     TRL,TBL,TGL,                                      & ! H
                     XXXR, XXXB, XXXG, XXXC,                           & ! H
@@ -360,7 +362,9 @@ use module_wrf_error
 
    INTEGER, INTENT(IN) :: UTYPE ! urban type [1=Commercial/Industrial, 2=High-intensity residential, 
                                 ! 3=low-intensity residential]
-   INTEGER, INTENT(IN) :: jmonth! current month 
+   INTEGER, INTENT(IN) :: jmonth! current month
+   INTEGER, INTENT(IN) :: distributed_ahe_opt ! distributed anthropogenic heat option ! xue.lingbo 2026/04/08
+   REAL, INTENT(IN)    :: AHE  ! anthropogenic heat                     [W/m^2]       ! xue.lingbo 2026/04/08
    REAL, INTENT(IN)    :: TA   ! potential temp at 1st atmospheric level [K]
    REAL, INTENT(IN)    :: QA   ! mixing ratio at 1st atmospheric level  [kg/kg]
    REAL, INTENT(IN)    :: UA   ! wind speed at 1st atmospheric level    [m/s]
@@ -377,6 +381,8 @@ use module_wrf_error
 
    REAL, INTENT(IN)    :: XLAT ! latitude                               [deg]
    REAL, INTENT(IN)    :: DELT ! time step                              [s]
+   REAL
+   REAL, INTENT(IN)    :: 
    REAL, INTENT(INOUT) :: CHS,CHS2 ! CH*U at za and 2 m             [m/s]
 
    REAL, INTENT(INOUT) :: SSGD ! downward direct short wave radiation   [W/m/m]
@@ -773,7 +779,12 @@ use module_wrf_error
 
 
 ! Miao, 2007/01/17, cal. ah
-   if(ahoption==1) AH=AH*ahdiuprf(tloc)
+! Xue.Lingbo 2026/04/08, modify the calculation of AH to consider the distributed anthropogenic heat option
+   if(distributed_ahe_opt==3) then
+     AH = AHE
+   else
+     if(ahoption==1) AH=AH*ahdiuprf(tloc)
+   endif
 
 ! Yang, 2014/10/08, cal. alh
    Kalh=0

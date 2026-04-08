@@ -39,6 +39,7 @@ contains
                       flxhumr_urb2d,  flxhumb_urb2d,  flxhumg_urb2d,                        & !H urban
                              julian,          julyr,                                        & !H urban
                           frc_urb2d,    utype_urb2d,  urblandusef_2d,                       & !I urban            ! xue.lingbo 2026.01.28
+                distributed_ahe_opt,            AHE,                                        & !I urban            ! xue.lingbo 2026/04/08
                                 chs,           chs2,           cqs2,                        & !H
                       num_urban_ndm,  urban_map_zrd,  urban_map_zwd, urban_map_gd,          & !I multi-layer urban
                        urban_map_zd,  urban_map_zdf,   urban_map_bd, urban_map_wd,          & !I multi-layer urban
@@ -79,6 +80,7 @@ contains
 !----------------------------------------------------------------
     type(NoahmpIO_type),                             intent(in)    ::  NoahmpIO
     INTEGER,                                         INTENT(IN   ) ::  sf_urban_physics   ! urban physics option
+    INTEGER,                                         INTENT(IN   ) ::  distributed_ahe_opt ! distributed anthropogenic heat option
     INTEGER,                                         INTENT(IN   ) ::  NSOIL     ! number of soil layers
     INTEGER, DIMENSION( ims:ime,          jms:jme ), INTENT(IN   ) ::  IVGTYP    ! vegetation type
     INTEGER,                                         INTENT(IN   ) ::  ITIMESTEP ! timestep number
@@ -120,6 +122,7 @@ contains
      INTEGER,        DIMENSION( ims:ime, jms:jme ),          INTENT(IN   ) :: UTYPE_URB2D
      REAL,           DIMENSION( ims:ime, jms:jme ),          INTENT(IN   ) :: FRC_URB2D
      REAL,           DIMENSION( ims:ime, jms:jme ),          INTENT(IN   ) :: URBLANDUSEF_2D                           ! xue.lingbo 2026.01.28
+     REAL,           DIMENSION( ims:ime, jms:jme ),          INTENT(IN   ) :: AHE                                      ! xue.lingbo 2026/04/08
 
      REAL, OPTIONAL, DIMENSION(1:num_roof_layers),           INTENT(IN   ) :: DZR
      REAL, OPTIONAL, DIMENSION(1:num_wall_layers),           INTENT(IN   ) :: DZB
@@ -138,6 +141,7 @@ contains
 ! local variables lsm --> urban
 
      INTEGER :: UTYPE_URB ! urban type [urban=1, suburban=2, rural=3]
+     REAL    :: AHE_URB      ! anthropogenic heat flux [W/m/m]                 ! xue.lingbo 2026/04/08
      REAL    :: TA_URB       ! potential temp at 1st atmospheric level [K]
      REAL    :: QA_URB       ! mixing ratio at 1st atmospheric level  [kg/kg]
      REAL    :: UA_URB       ! wind speed at 1st atmospheric level    [m/s]
@@ -405,6 +409,7 @@ ILOOP : DO I = its, ite
 
     UTYPE_URB = UTYPE_URB2D(I,J) !urban type (low, high or industrial)
 
+    AHE_URB   = AHE(I,J)                                  ! [W/m/m]         ! xue.lingbo 2026/04/08
     TA_URB    = T3D(I,1,J)                                ! [K]            
     QA_URB    = QV3D(I,1,J)/(1.0+QV3D(I,1,J))             ! [kg/kg]       
     UA_URB    = SQRT(U_PHY(I,1,J)**2.+V_PHY(I,1,J)**2.)
@@ -512,6 +517,7 @@ ILOOP : DO I = its, ite
              ZA_URB, DECLIN_URB,   COSZ_URB,    OMG_URB,                               & ! I
            XLAT_URB,   DELT_URB,    ZNT_URB,                                           & ! I
             CHS_URB,   CHS2_URB,                                                       & ! I
+            distributed_ahe_opt,    AHE_URB,                                           & ! I  ! xue.lingbo 2026/04/08
              TR_URB,     TB_URB,     TG_URB,     TC_URB,   QC_URB,   UC_URB,           & ! H
             TRL_URB,    TBL_URB,    TGL_URB,                                           & ! H
            XXXR_URB,   XXXB_URB,   XXXG_URB,   XXXC_URB,                               & ! H
