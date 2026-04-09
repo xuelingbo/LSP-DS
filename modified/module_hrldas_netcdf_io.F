@@ -2099,9 +2099,9 @@ contains
     integer :: rank
 
     type(inputstruct) :: lastread = inputstruct("0000-00-00_00:00:00", &
-         null(), null(), null(), null(), null(), null(), null(), null(), null(), null(), null() )
+         null(), null(), null(), null(), null(), null(), null(), null(), null(), null(), null(), null() )
     type(inputstruct) :: nextread= inputstruct("0000-00-00_00:00:00", &
-         null(), null(), null(), null(), null(), null(), null(), null(), null(), null(), null() )
+         null(), null(), null(), null(), null(), null(), null(), null(), null(), null(), null(), null() )
 
     if(reset_spinup_date) lastread%read_date = startdate
     reset_spinup_date = .false.
@@ -2338,7 +2338,7 @@ contains
     allocate(instruct%vegfra(xstart:xend,ystart:yend), stat=allostat )
     if (allostat/=0) stop "Problem allocating instruct%vegfra"
 
-    allocate(instruct%ahe   (xstart:xend,ystart:yend), stat=allostat )          ! xue.lingbo 2026/04/08
+    allocate(instruct%ahe (xstart:xend,ystart:yend), stat=allostat )          ! xue.lingbo 2026/04/08
     if (allostat/=0) stop "Problem allocating instruct%ahe"
 
     allocate(instruct%lai (xstart:xend,ystart:yend), stat=allostat )
@@ -2465,11 +2465,11 @@ contains
     if (associated(instruct%lai)) then
        deallocate(instruct%lai)
        nullify(instruct%lai)
+    endif
 
     if (associated(instruct%ahe)) then           ! xue.lingbo 2026/04/08
        deallocate(instruct%ahe)
        nullify(instruct%ahe)
-
     endif
   end subroutine clear_inputstruct
 
