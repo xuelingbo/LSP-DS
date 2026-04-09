@@ -2197,7 +2197,9 @@ contains
        call get_2d_netcdf(trim(forcing_name_LW), ncid, nextread%lw,    units, xstart, xend, ystart, yend, FATAL, ierr)
        call get_2d_netcdf(trim(forcing_name_SW), ncid, nextread%sw,    units, xstart, xend, ystart, yend, FATAL, ierr)
        call get_2d_netcdf(trim(forcing_name_PR), ncid, nextread%pcp,   units, xstart, xend, ystart, yend, FATAL, ierr)
-       call get_2d_netcdf(trim(forcing_name_AHE), ncid, nextread%ahe,  units, xstart, xend, ystart, yend, FATAL, ierr)  ! xue.lingbo 2026/04/08
+
+       nextread%ahe = 0.0  ! Assume zero in case not present
+       call get_2d_netcdf(trim(forcing_name_AHE), ncid, nextread%ahe,  units, xstart, xend, ystart, yend, NOT_FATAL, ierr)  ! xue.lingbo 2026/04/08
        
        nextread%snow = 0.0  ! Assume zero in case not present
        call get_2d_netcdf(trim(forcing_name_SN), ncid, nextread%snow,  units, xstart, xend, ystart, yend, NOT_FATAL, ierr)
