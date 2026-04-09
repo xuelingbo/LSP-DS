@@ -1,10 +1,10 @@
 &NOAHLSM_OFFLINE
 
- HRLDAS_SETUP_FILE = "/home/lingbo/LSP-DS/hands-on/ERA5/YangtzeDelta/LDASIN/HRLDAS_setup_2020080100_d1"
- INDIR = "/home/lingbo/LSP-DS/hands-on/ERA5/YangtzeDelta/LDASIN/"
- OUTDIR = "/home/lingbo/LSP-DS/hands-on/ERA5/YangtzeDelta/LDASOUT/"
+ HRLDAS_SETUP_FILE = "/home/xuelingbo/LSP-DS/hands-on/ERA5/YangtzeDelta/LDASIN/HRLDAS_setup_2018080100_d1"
+ INDIR = "/home/xuelingbo/LSP-DS/hands-on/ERA5/YangtzeDelta/LDASIN/"
+ OUTDIR = "/home/xuelingbo/LSP-DS/hands-on/ERA5/YangtzeDelta/LDASOUT/"
 
- START_YEAR  = 2020
+ START_YEAR  = 2018
  START_MONTH = 08
  START_DAY   = 01
  START_HOUR  = 00
@@ -12,7 +12,7 @@
 
 ! RESTART_FILENAME_REQUESTED = "/glade/scratch/cenlinhe/test/hrldas_output/RESTART.2000010100_DOMAIN1"
 
- KDAY = 2
+ KDAY = 7
  SPINUP_LOOPS = 0
 
  FORCING_NAME_T = "T2D"
@@ -23,6 +23,7 @@
  FORCING_NAME_LW = "LWDOWN"
  FORCING_NAME_SW = "SWDOWN"
  FORCING_NAME_PR = "RAINRATE"
+ FORCING_NAME_AHE = "AHE"
 
  DYNAMIC_VEG_OPTION                = 7
  CANOPY_STOMATAL_RESISTANCE_OPTION = 1

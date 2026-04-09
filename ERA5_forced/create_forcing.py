@@ -11,10 +11,12 @@ import os
 import pandas as pd
 import xarray as xr
 import rioxarray
+import xesmf as xe
 from scipy.interpolate import RectBivariateSpline
 # import mpl_toolkits.basemap
 
-def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_file, levelist, ZLVL):
+def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_file, levelist, ZLVL, 
+                        ahe_file=None, ahe_profile=None, utc_offset=None, urbfrc_table=1):
     
     if not os.path.exists(output_dir+"/LDASIN"):
         os.makedirs(output_dir+"/LDASIN")
@@ -27,6 +29,7 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
                 'strd': {'name':'LWDOWN', 'attrs':{'units':'W/m^2'}},
                 'ssrd': {'name':'SWDOWN', 'attrs':{'units':'W/m^2'}},
                 'tp': {'name':'RAINRATE', 'attrs':{'units':'kg/m^2/s'}},
+                'ahe': {'name':'AHE', 'attrs':{'units':'W/m^2'}},
                 'LAI12M':{'name':'LAI', 'attrs':{'units':'m^2/m^2'}},
                 'GREENFRAC':{'name':'VEGFRA', 'attrs':{'units':'%'}},
                }
@@ -38,6 +41,95 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
     z_file = xr.open_dataset(os.path.join(raw_data_dir, 'z_out.grib'), engine='cfgrib')
     z_file_domain = z_file.sel(latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5), 
                               longitude=slice(geo_lon.min()-0.5, geo_lon.max()+0.5))
+    
+    def bounds_1d(c):
+        b = np.empty(len(c) + 1)
+        b[1:-1] = 0.5 * (c[:-1] + c[1:])
+        b[0]    = c[0]  - (c[1]  - c[0])  / 2
+        b[-1]   = c[-1] + (c[-1] - c[-2]) / 2
+        return b
+
+    def bounds_2d(c):
+        ny, nx = c.shape
+        b = np.zeros((ny + 1, nx + 1))
+        b[1:-1, 1:-1] = 0.25 * (c[:-1, :-1] + c[:-1, 1:] + c[1:, :-1] + c[1:, 1:])
+        b[0,   1:-1]  = 2*b[1,   1:-1] - b[2,   1:-1]
+        b[-1,  1:-1]  = 2*b[-2,  1:-1] - b[-3,  1:-1]
+        b[1:-1, 0]    = 2*b[1:-1, 1]   - b[1:-1, 2]
+        b[1:-1, -1]   = 2*b[1:-1, -2]  - b[1:-1, -3]
+        b[0,   0]     = b[1,  1]   + (b[1,  1]  - b[2,  2])
+        b[0,   -1]    = b[1,  -2]  + (b[1, -2]  - b[2, -3])
+        b[-1,  0]     = b[-2, 1]   + (b[-2, 1]  - b[-3, 2])
+        b[-1,  -1]    = b[-2, -2]  + (b[-2, -2] - b[-3, -3])
+        return b
+
+    def ahe (ahe_file, ahe_profile, geo_em_file):
+
+        buffer = 0.2  # degrees, to avoid edge truncation in conservative remapping
+        geo_em  = xr.open_dataset(geo_em_file)
+        geo_lat = geo_em.XLAT_M.values[0]
+        geo_lon = geo_em.XLONG_M.values[0]
+
+        ahe = rioxarray.open_rasterio(ahe_file).squeeze()
+        ahe = ahe.rio.reproject("EPSG:4326")
+        ahe = ahe.rio.clip_box(minx=geo_lon.min()-buffer, miny=geo_lat.min()-buffer,
+                               maxx=geo_lon.max()+buffer, maxy=geo_lat.max()+buffer)
+        ahe_lat = ahe.y.values
+        ahe_lon = ahe.x.values
+
+        if ahe_lat[0] > ahe_lat[-1]:
+            ahe_lat = ahe_lat[::-1]
+            ahe_raw = ahe.values[::-1, :]
+        else:
+            ahe_raw = ahe.values
+        ahe_raw = np.where(ahe_raw < -1e30, 0.0, ahe_raw)  # replace fill value
+        ahe_vals = np.nan_to_num(ahe_raw, nan=0.0)
+
+        ds_in = xr.Dataset({
+            'lat':   (['lat'],   ahe_lat, {'units': 'degrees_north'}),
+            'lon':   (['lon'],   ahe_lon, {'units': 'degrees_east'}),
+            'lat_b': (['lat_b'], bounds_1d(ahe_lat)),
+            'lon_b': (['lon_b'], bounds_1d(ahe_lon)),
+        })
+        ds_out = xr.Dataset({
+            'lat':   (['y', 'x'], geo_lat,           {'units': 'degrees_north'}),
+            'lon':   (['y', 'x'], geo_lon,           {'units': 'degrees_east'}),
+            'lat_b': (['y_b', 'x_b'], bounds_2d(geo_lat)),
+            'lon_b': (['y_b', 'x_b'], bounds_2d(geo_lon)),
+        })
+        regridder = xe.Regridder(ds_in, ds_out, method='conservative',
+                                 unmapped_to_nan=True, ignore_degenerate=True)
+        ahe_interp = np.nan_to_num(
+            regridder(xr.DataArray(ahe_vals, dims=['lat', 'lon'])).values, nan=0.0)
+
+        # normalize profile so hourly values integrate to daily mean
+        # profile is in local time , shift to UTC
+        profile_arr = np.roll(np.array(ahe_profile), -utc_offset)
+        profile_norm = profile_arr / profile_arr.sum() * 24
+        ahe_hourly_raw = np.array([ahe_interp * w for w in profile_norm])  # shape: (24, south_north, west_east), UTC
+
+        # AHE in the dataset is the mean value over the grid, what we need is the value of impermeable surface (urban, for SLUCM)
+        urblandusef = geo_em.LANDUSEF.sel(land_cat=12).values.squeeze()
+        ahe_hourly = np.zeros_like(ahe_hourly_raw)
+        for h in range(24):
+            ahe_h = ahe_hourly_raw[h]
+            # mean ratio where both ahe and urblandusef > 0
+            mask_both = (ahe_h > 0) & (urblandusef > 0)
+            mean_ratio = np.mean(ahe_h[mask_both] / urblandusef[mask_both]) if mask_both.any() else 0.0
+            # urblandusef>0 but ahe==0 → fill with mean_ratio * urblandusef
+            ahe_corrected = np.where((urblandusef > 0) & (ahe_h == 0), mean_ratio * urblandusef, ahe_h)
+            # urblandusef<=0 but ahe!=0 → set 0 (noise outside urban area)
+            ahe_corrected = np.where((urblandusef <= 0) & (ahe_corrected != 0), 0.0, ahe_corrected)
+            # divide by urblandusef to get AHE per unit urban area
+            ahe_hourly[h] = np.where(urblandusef > 0, ahe_corrected / (urblandusef*urbfrc_table), 0.0)
+
+        return ahe_hourly
+    
+    if ahe_file is not None and ahe_profile is not None and utc_offset is not None:
+        ahe_hourly = ahe(ahe_file, ahe_profile, geo_em_file)
+        # print(ahe_hourly[5, :, :])  # print AHE for hour 5 as a check
+    else:
+        ahe_hourly = np.zeros((24, geo_lat.shape[0], geo_lat.shape[1]))
     
     for date in pd.date_range(start_date, end_date, freq= 'D'):
         
@@ -95,6 +187,9 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
                         raw_data_file = xr.open_dataset(os.path.join(output_dir,'LDASIN', f'{var}.nc'))
                         data_var = [raw_data_file[var].sel(date='2021'+str(date.date())[-6:]).values]
 
+                elif variables[var]['name'] in ['AHE']:
+                    pass  # ahe_hourly already computed, no file reading needed
+
                 else:
                     filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_t_u_v_q_{levelist}_era5_model_level.nc")
                     raw_data_file = xr.open_dataset(filename)
@@ -116,6 +211,9 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
                     LDASIN_file[variables[var]['name']].attrs['units'] = variables[var]['attrs']['units']
                 elif variables[var]['name'] in ['LAI', 'VEGFRA']:
                     LDASIN_file[variables[var]['name']] = (('Time','south_north','west_east'), data_var)
+                    LDASIN_file[variables[var]['name']].attrs['units'] = variables[var]['attrs']['units']
+                elif variables[var]['name'] in ['AHE']:
+                    LDASIN_file[variables[var]['name']] = (('Time','south_north','west_east'), [ahe_hourly[time.hour, :, :]])
                     LDASIN_file[variables[var]['name']].attrs['units'] = variables[var]['attrs']['units']
                 else:
                     # data_var_interpolated = mpl_toolkits.basemap.interp(data_var, 
@@ -289,7 +387,7 @@ def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file, lcz=0):
 
         elif var == 'SNOW': 
             data_var =  [ soil_data[-1] * 1000]
-        
+
         ########################
         # add SEAICE and CANWAT
         ########################
@@ -354,15 +452,25 @@ def create_lai_vegfra(geo_em_file, output_dir):
 
 if __name__ == '__main__':
 
-    start_year = 2020
-    end_year = 2020
+    start_year = 2018
+    end_year = 2018
     loop_start_date = '08-01'
-    loop_end_date = '08-02'
-    raw_data_dir = '../hands-on/ERA5/YangtzeDelta/raw/'
+    loop_end_date = '08-07'
+    # raw_data_dir = '../hands-on/ERA5/YangtzeDelta/raw/'
+    raw_data_dir = '/home/xuelingbo/NAS_ERA5_HRLDAS/'
     output_dir = '../hands-on/ERA5/YangtzeDelta/'
     geo_em_file = '../hands-on/ERA5/YangtzeDelta/geo/geo_em.d01.nc'
+    ahe_file = f'/home/xuelingbo/data/AHF/AHF{start_year}.tif'
+    ahe_profile = [0.4178056766, 0.3657308632, 0.3217844562, 0.2938594942, 
+                   0.2806290301, 0.2889400697, 0.3065774127, 0.3619608281, 
+                   0.5388410089, 0.7649379382, 0.9467296349, 1, 
+                   0.9378828369, 0.9546770639, 0.9624970061, 0.9509591352, 
+                   0.9787157012, 0.9972752017, 0.9995627881, 0.9669973445,
+                   0.8745974733, 0.7576414942, 0.6162263020, 0.5046295022]      # local time, Ao, 2019
     levelist = '136'
     ZLVL = 30
+    utc_offset = 8
+    urbfrc_table = 0.9
 
     create_lai_vegfra(geo_em_file, output_dir)
 
@@ -374,6 +482,7 @@ if __name__ == '__main__':
 
         create_LDASIN_files(f'{str(year)}-{loop_start_date}', f'{str(year)}-{loop_end_date}', \
                             raw_data_dir, output_dir, \
-                            geo_em_file, levelist, ZLVL)
+                            geo_em_file, levelist, ZLVL, \
+                            ahe_file, ahe_profile, utc_offset, urbfrc_table)
         
         
