@@ -2,7 +2,7 @@
 
  HRLDAS_SETUP_FILE = "/home/xuelingbo/LSP-DS/hands-on/ERA5/YangtzeDelta/LDASIN/HRLDAS_setup_2018080100_d1"
  INDIR = "/home/xuelingbo/LSP-DS/hands-on/ERA5/YangtzeDelta/LDASIN/"
- OUTDIR = "/home/xuelingbo/LSP-DS/hands-on/ERA5/YangtzeDelta/LDASOUT/"
+ OUTDIR = "/home/xuelingbo/LSP-DS/hands-on/ERA5/YangtzeDelta/LDASOUT_ah_opt_3/"
 
  START_YEAR  = 2018
  START_MONTH = 08
@@ -48,6 +48,7 @@
  IRRIGATION_OPTION                 = 0
  IRRIGATION_METHOD                 = 0
  TILE_DRAINAGE_OPTION              = 0
+ distributed_ahe_opt               = 3
 
  FORCING_TIMESTEP = 3600
  NOAH_TIMESTEP    = 1800
