@@ -27,6 +27,7 @@ contains
                          xxxr_urb2d,     xxxb_urb2d,     xxxg_urb2d, xxxc_urb2d,            & !H urban
                           trl_urb3d,      tbl_urb3d,      tgl_urb3d,                        & !H urban
                            sh_urb2d,       lh_urb2d,        g_urb2d,   rn_urb2d,            & !H urban
+                          ahe_urb2d,                                                        & !O urban            ! xue.lingbo 2026/04/08
                            ts_urb2d,     trad_urb2d,                                        & !O urban            ! xue.lingbo 2024/08/11
                          psim_urb2d,     psih_urb2d,      u10_urb2d,  v10_urb2d,            & !O urban
                        GZ1OZ0_urb2d,     AKMS_URB2D,                                        & !O urban
@@ -80,7 +81,7 @@ contains
 !----------------------------------------------------------------
     type(NoahmpIO_type),                             intent(in)    ::  NoahmpIO
     INTEGER,                                         INTENT(IN   ) ::  sf_urban_physics   ! urban physics option
-    INTEGER,                                         INTENT(IN   ) ::  distributed_ahe_opt ! distributed anthropogenic heat option
+    INTEGER,                                         INTENT(IN   ) ::  distributed_ahe_opt ! distributed anthropogenic heat option ! xue.lingbo 2026/04/08
     INTEGER,                                         INTENT(IN   ) ::  NSOIL     ! number of soil layers
     INTEGER, DIMENSION( ims:ime,          jms:jme ), INTENT(IN   ) ::  IVGTYP    ! vegetation type
     INTEGER,                                         INTENT(IN   ) ::  ITIMESTEP ! timestep number
@@ -220,6 +221,7 @@ contains
      REAL, OPTIONAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT) :: RN_URB2D
      REAL, OPTIONAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT) :: TS_URB2D
      REAL, OPTIONAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT) :: TRAD_URB2D                          ! xue.lingbo 2024/08/11
+     REAL, OPTIONAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT) :: AHE_URB2D                           ! xue.lingbo 2026/04/08
 
      REAL, OPTIONAL, DIMENSION( ims:ime, 1:num_roof_layers, jms:jme ), INTENT(INOUT) :: TRL_URB3D
      REAL, OPTIONAL, DIMENSION( ims:ime, 1:num_wall_layers, jms:jme ), INTENT(INOUT) :: TBL_URB3D
@@ -409,7 +411,7 @@ ILOOP : DO I = its, ite
 
     UTYPE_URB = UTYPE_URB2D(I,J) !urban type (low, high or industrial)
 
-    AHE_URB   = AHE(I,J)                                  ! [W/m/m]         ! xue.lingbo 2026/04/08
+    AHE_URB   = AHE(I,J) / (URBLANDUSEF_2D(I,J)*FRC_URB2D(I,J))            ! [W/m/m]         ! xue.lingbo 2026/04/08
     TA_URB    = T3D(I,1,J)                                ! [K]            
     QA_URB    = QV3D(I,1,J)/(1.0+QV3D(I,1,J))             ! [kg/kg]       
     UA_URB    = SQRT(U_PHY(I,1,J)**2.+V_PHY(I,1,J)**2.)
@@ -536,6 +538,7 @@ ILOOP : DO I = its, ite
     TS_URB2D(I,J)   = TS_URB
     TRAD_URB2D(I,J) = TRAD_URB                                                                    ! xue.lingbo 2024/08/11
 
+    AHE_URB2D(I,J)  = AHE_URB                                                                     ! xue.lingbo 2026/04/08
 
     ! the real urban fraction is URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J)                             ! xue.lingbo 2026.01.28
     ALBEDO(I,J)   = URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J) * ALB_URB + (1-URBLANDUSEF_2D(I,J) * FRC_URB2D(I,J)) * ALBEDO(I,J)        ![-]      

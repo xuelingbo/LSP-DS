@@ -119,7 +119,7 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
             # urblandusef>0 but ahe==0 → fill with mean_ratio * urblandusef
             ahe_corrected = np.where((urblandusef > 0) & (ahe_h <= 0), mean_ratio * urblandusef, ahe_h)
             # divide by urblandusef to get AHE per unit urban area
-            ahe_hourly[h] = np.where(urblandusef > 0, ahe_corrected / (urblandusef*urbfrc_table), 0.0)
+            ahe_hourly[h] = np.where(urblandusef > 0, ahe_corrected, 0.0)
 
         return ahe_hourly
     

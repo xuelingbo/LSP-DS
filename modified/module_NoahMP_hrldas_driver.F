@@ -546,7 +546,8 @@ contains
                               NoahmpIO%TR_URB2D, NoahmpIO%TB_URB2D, NoahmpIO%TG_URB2D, NoahmpIO%TC_URB2D,NoahmpIO%QC_URB2D, & !urban
                               NoahmpIO%TRL_URB3D, NoahmpIO%TBL_URB3D, NoahmpIO%TGL_URB3D, NoahmpIO%SH_URB2D,                & !urban
                               NoahmpIO%LH_URB2D, NoahmpIO%G_URB2D, NoahmpIO%RN_URB2D,                                       & !urban
-                              NoahmpIO%TS_URB2D, NoahmpIO%TRAD_URB2D,                                                       & !urban   !xue.lingbo 2024.08.11
+                              NoahmpIO%AHE_URB2D,                                                                           & !urban   ! xue.lingbo 2024/04/08
+                              NoahmpIO%TS_URB2D, NoahmpIO%TRAD_URB2D,                                                       & !urban   ! xue.lingbo 2024.08.11
                               NoahmpIO%num_urban_ndm,  NoahmpIO%urban_map_zrd,  NoahmpIO%urban_map_zwd,                     & !urban
                               NoahmpIO%urban_map_gd,                                                                        & !I multi-layer urban
                               NoahmpIO%urban_map_zd,  NoahmpIO%urban_map_zdf, NoahmpIO%urban_map_bd,                        & !I multi-layer urban   
@@ -674,7 +675,8 @@ contains
                               NoahmpIO%TR_URB2D, NoahmpIO%TB_URB2D, NoahmpIO%TG_URB2D, NoahmpIO%TC_URB2D,NoahmpIO%QC_URB2D,& !urban
                               NoahmpIO%TRL_URB3D, NoahmpIO%TBL_URB3D, NoahmpIO%TGL_URB3D, NoahmpIO%SH_URB2D,               & !urban
                               NoahmpIO%LH_URB2D, NoahmpIO%G_URB2D, NoahmpIO%RN_URB2D,                                      & !urban
-                              NoahmpIO%TS_URB2D, NoahmpIO%TRAD_URB2D,                                                      & !urban  ! xue.lingbo 2024/08/11
+                              NoahmpIO%AHE_URB2D,                                                                          & !urban   ! xue.lingbo 2024/04/08
+                              NoahmpIO%TS_URB2D, NoahmpIO%TRAD_URB2D,                                                      & !urban   ! xue.lingbo 2024/08/11
                               NoahmpIO%num_urban_ndm,  NoahmpIO%urban_map_zrd,  NoahmpIO%urban_map_zwd,                    & !urban
                               NoahmpIO%urban_map_gd,                                                                       & !I multi-layer urban
                               NoahmpIO%urban_map_zd,  NoahmpIO%urban_map_zdf, NoahmpIO%urban_map_bd,                       & !I multi-layer urban   
@@ -1024,6 +1026,7 @@ contains
                             NoahmpIO%xxxr_urb2d, NoahmpIO%xxxb_urb2d, NoahmpIO%xxxg_urb2d,                      & !H urban
                             NoahmpIO%xxxc_urb2d, NoahmpIO%trl_urb3d, NoahmpIO%tbl_urb3d, NoahmpIO%tgl_urb3d,    & !H urban
                             NoahmpIO%sh_urb2d, NoahmpIO%lh_urb2d, NoahmpIO%g_urb2d, NoahmpIO%rn_urb2d,          & !H urban
+                            NoahmpIO%ahe_urb2d,                                                                 & !O urban          ! xue.lingbo 2024/04/08
                             NoahmpIO%ts_urb2d, NoahmpIO%trad_urb2d,                                             & !O urban          ! xue.lingbo 2024/08/11
                             NoahmpIO%psim_urb2d,                                                                &
                             NoahmpIO%psih_urb2d, NoahmpIO%u10_urb2d, NoahmpIO%v10_urb2d,                        & !O urban
@@ -1359,7 +1362,8 @@ contains
                call add_to_output(     NoahmpIO%MH_URB2D  ,      "MH_URB2D"  , "" , "" )
                call add_to_output(   NoahmpIO%STDH_URB2D  ,    "STDH_URB2D"  , "" , "" )
                call add_to_output(  NoahmpIO%URBLANDUSEF  ,   "URBLANDUSEF"  , "" , "" )         ! xue.lingbo 2026.01.28
-                  
+               call add_to_output(    NoahmpIO%AHE_URB2D  ,     "AHE_URB2D"  , "" , "" )         ! xue.lingbo 2026/04/08
+
                if ( NoahmpIO%SF_URBAN_PHYSICS == 1 ) then  ! single layer urban model  
                   call add_to_output(NoahmpIO%TH2_URB2D   ,     "TH2_URB2D"  , "" , "" )
                   call add_to_output(NoahmpIO%Q2_URB2D    ,      "Q2_URB2D"  , "" , "" )

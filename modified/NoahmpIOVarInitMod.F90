@@ -345,6 +345,7 @@ contains
        if ( .not. allocated (NoahmpIO%lb_urb2d)   ) allocate ( NoahmpIO%lb_urb2d    (XSTART:XEND,YSTART:YEND) )
        if ( .not. allocated (NoahmpIO%hgt_urb2d)  ) allocate ( NoahmpIO%hgt_urb2d   (XSTART:XEND,YSTART:YEND) )
        if ( .not. allocated (NoahmpIO%ust)        ) allocate ( NoahmpIO%ust         (XSTART:XEND,YSTART:YEND) )
+       if ( .not. allocated (NoahmpIO%ahe_urb2d)  ) allocate ( NoahmpIO%ahe_urb2d   (XSTART:XEND,YSTART:YEND) ) ! xue.lingbo 2026/04/08
        !ENDIF
          
        !IF(NoahmpIO%SF_URBAN_PHYSICS == 1 ) THEN  ! single layer urban model  
@@ -723,6 +724,7 @@ contains
 
     ! urban model 
     if ( NoahmpIO%SF_URBAN_PHYSICS > 0 ) then
+       NoahmpIO%ahe_urb2d     = undefined_real               ! xue.lingbo 2024/04/08
        NoahmpIO%JULDAY        = undefined_int_neg
        NoahmpIO%IRI_URBAN     = undefined_int_neg
        NoahmpIO%utype_urb2d   = undefined_int_neg

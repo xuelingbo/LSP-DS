@@ -414,6 +414,7 @@ module NoahmpIOVarType
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  rn_urb2d
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  ts_urb2d
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  trad_urb2d           ! xue.lingbo 2024/08/11
+    real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  ahe_urb2d            ! xue.lingbo 2026/04/08
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  psim_urb2d
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  psih_urb2d
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  u10_urb2d
