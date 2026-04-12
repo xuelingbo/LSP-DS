@@ -16,7 +16,7 @@ from scipy.interpolate import RectBivariateSpline
 # import mpl_toolkits.basemap
 
 def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_file, levelist, ZLVL, 
-                        ahe_file=None, ahe_profile=None, utc_offset=None, urbfrc_table=1):
+                        ahe_file=None, ahe_profile=None, utc_offset=None):
     
     if not os.path.exists(output_dir+"/LDASIN"):
         os.makedirs(output_dir+"/LDASIN")
@@ -63,7 +63,7 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
         b[-1,  -1]    = b[-2, -2]  + (b[-2, -2] - b[-3, -3])
         return b
 
-    def ahe (ahe_file, ahe_profile, geo_em_file):
+    def ahe_raster_hourly (ahe_file, ahe_profile, geo_em_file):
 
         buffer = 0.2  # degrees, to avoid edge truncation in conservative remapping
         geo_em  = xr.open_dataset(geo_em_file)
@@ -102,29 +102,45 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
         ahe_interp = np.nan_to_num(
             regridder(xr.DataArray(ahe_vals, dims=['lat', 'lon'])).values, nan=0.0)
 
+        urblandusef = geo_em.LANDUSEF.sel(land_cat=12).values.squeeze()
+
+        # Fill spatial gaps in the annual mean AHE before applying the hourly profile,
+        # so that all pixels follow the same temporal pattern after disaggregation.
+        # Find modal urblandusef (bin width = 0.1) and modal AHE (bin width = 5 W/m^2)
+        # among valid pixels (ahe > 0 and urblandusef > 0).
+        # Fill value = modal_ahe / modal_urban * urblandusef(gap pixel).
+        valid_urban = urblandusef[urblandusef > 0]
+        if valid_urban.size > 0:
+            urb_bins    = np.arange(0, valid_urban.max() + 0.1, 0.1)
+            urb_counts, urb_edges = np.histogram(valid_urban, bins=urb_bins)
+            modal_urban = (urb_edges[np.argmax(urb_counts)] + urb_edges[np.argmax(urb_counts) + 1]) / 2.0
+        else:
+            modal_urban = 0.7
+
+        valid_ahe = ahe_interp[(ahe_interp > 0) & (urblandusef > 0)]
+        if valid_ahe.size > 0:
+            ahe_bins   = np.arange(0, valid_ahe.max() + 5.0, 5.0)
+            ahe_counts, ahe_edges = np.histogram(valid_ahe, bins=ahe_bins)
+            modal_ahe  = (ahe_edges[np.argmax(ahe_counts)] + ahe_edges[np.argmax(ahe_counts) + 1]) / 2.0
+        else:
+            modal_ahe = 20
+
+        print(f"Modal urban fraction: {modal_urban:.2f}, Modal AHE: {modal_ahe:.2f} W/m^2")
+
+        fill_ahe   = np.where(urblandusef > 0, modal_ahe / modal_urban * urblandusef, 0.0)
+        ahe_interp = np.where((urblandusef > 0) & (ahe_interp <= 0), fill_ahe, ahe_interp)
+        ahe_interp = np.where(urblandusef > 0, ahe_interp, 0.0)
+
         # normalize profile so hourly values integrate to daily mean
-        # profile is in local time , shift to UTC
+        # profile is in local time, shift to UTC
         profile_arr = np.roll(np.array(ahe_profile), -utc_offset)
         profile_norm = profile_arr / profile_arr.sum() * 24
-        ahe_hourly_raw = np.array([ahe_interp * w for w in profile_norm])  # shape: (24, south_north, west_east), UTC
-
-        # AHE in the dataset is the mean value over the grid, what we need is the value of impermeable surface (urban, for SLUCM)
-        urblandusef = geo_em.LANDUSEF.sel(land_cat=12).values.squeeze()
-        ahe_hourly = np.zeros_like(ahe_hourly_raw)
-        for h in range(24):
-            ahe_h = ahe_hourly_raw[h]
-            # mean ratio where both ahe and urblandusef > 0
-            mask_both = (ahe_h > 0) & (urblandusef > 0)
-            mean_ratio = np.mean(ahe_h[mask_both] / urblandusef[mask_both]) if mask_both.any() else 0.0
-            # urblandusef>0 but ahe==0 → fill with mean_ratio * urblandusef
-            ahe_corrected = np.where((urblandusef > 0) & (ahe_h <= 0), mean_ratio * urblandusef, ahe_h)
-            # divide by urblandusef to get AHE per unit urban area
-            ahe_hourly[h] = np.where(urblandusef > 0, ahe_corrected, 0.0)
+        ahe_hourly = np.array([ahe_interp * w for w in profile_norm])  # shape: (24, south_north, west_east), UTC
 
         return ahe_hourly
     
     if ahe_file is not None and ahe_profile is not None and utc_offset is not None:
-        ahe_hourly = ahe(ahe_file, ahe_profile, geo_em_file)
+        ahe_hourly = ahe_raster_hourly(ahe_file, ahe_profile, geo_em_file)
         # print(ahe_hourly[5, :, :])  # print AHE for hour 5 as a check
     else:
         ahe_hourly = np.zeros((24, geo_lat.shape[0], geo_lat.shape[1]))
@@ -468,7 +484,6 @@ if __name__ == '__main__':
     levelist = '136'
     ZLVL = 30
     utc_offset = 8
-    urbfrc_table = 0.9
 
     create_lai_vegfra(geo_em_file, output_dir)
 
@@ -481,6 +496,6 @@ if __name__ == '__main__':
         create_LDASIN_files(f'{str(year)}-{loop_start_date}', f'{str(year)}-{loop_end_date}', \
                             raw_data_dir, output_dir, \
                             geo_em_file, levelist, ZLVL, \
-                            ahe_file, ahe_profile, utc_offset, urbfrc_table)
+                            ahe_file, ahe_profile, utc_offset)
         
         
