@@ -119,16 +119,17 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
             modal_urban = 0.7
 
         valid_ahe = ahe_interp[(ahe_interp > 0) & (urblandusef > 0)]
-        if valid_ahe.size > 0:
-            ahe_bins   = np.arange(0, valid_ahe.max() + 5.0, 5.0)
-            ahe_counts, ahe_edges = np.histogram(valid_ahe, bins=ahe_bins)
-            modal_ahe  = (ahe_edges[np.argmax(ahe_counts)] + ahe_edges[np.argmax(ahe_counts) + 1]) / 2.0
-        else:
-            modal_ahe = 20
+        # if valid_ahe.size > 0:
+        #     ahe_bins   = np.arange(0, valid_ahe.max() + 5.0, 5.0)
+        #     ahe_counts, ahe_edges = np.histogram(valid_ahe, bins=ahe_bins)
+        #     modal_ahe  = (ahe_edges[np.argmax(ahe_counts)] + ahe_edges[np.argmax(ahe_counts) + 1]) / 2.0
+        # else:
+        #     modal_ahe = 20
+        median_ahe = np.median(valid_ahe) if valid_ahe.size > 0 else 10
 
-        print(f"Modal urban fraction: {modal_urban:.2f}, Modal AHE: {modal_ahe:.2f} W/m^2")
+        print(f"Modal urban fraction: {modal_urban:.2f}, Median AHE: {median_ahe:.2f} W/m^2")
 
-        fill_ahe   = np.where(urblandusef > 0, modal_ahe / modal_urban * urblandusef, 0.0)
+        fill_ahe   = np.where(urblandusef > 0, median_ahe / modal_urban * urblandusef, 0.0)
         ahe_interp = np.where((urblandusef > 0) & (ahe_interp <= 0), fill_ahe, ahe_interp)
         ahe_interp = np.where(urblandusef > 0, ahe_interp, 0.0)
 
