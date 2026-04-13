@@ -80,6 +80,7 @@ module NoahmpIOVarType
     real(kind=kind_noahmp), allocatable, dimension(:)      ::  ZSOIL               ! depth to soil interfaces [m]
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  VEGFRA              ! vegetation fraction []
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  URBLANDUSEF         ! urban land use fraction []                    ! xue.lingbo 2026.01.28
+    real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  AHE                 ! distributed anthropogenic heat [W/m^2]        ! xue.lingbo 2026/04/08
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  TMN                 ! deep soil temperature [K]
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  XLAND               ! =2 ocean; =1 land/seaice
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  XICE                ! fraction of grid that is seaice
@@ -413,6 +414,7 @@ module NoahmpIOVarType
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  rn_urb2d
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  ts_urb2d
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  trad_urb2d           ! xue.lingbo 2024/08/11
+    real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  ahe_urb2d            ! xue.lingbo 2026/04/08
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  psim_urb2d
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  psih_urb2d
     real(kind=kind_noahmp), allocatable, dimension(:,:)    ::  u10_urb2d
@@ -610,6 +612,7 @@ module NoahmpIOVarType
     integer                                                ::  spinup_loops
 
     integer                                                ::  sf_urban_physics
+    integer                                                ::  distributed_ahe_opt           ! xue.lingbo: added for distributed anthropogenic heat 2026/04/08
     integer                                                ::  use_wudapt_lcz
     integer                                                ::  num_urban_ndm
     integer                                                ::  num_urban_ng
@@ -644,6 +647,7 @@ module NoahmpIOVarType
     character(len=256)                                     ::  forcing_name_SW
     character(len=256)                                     ::  forcing_name_PR
     character(len=256)                                     ::  forcing_name_SN
+    character(len=256)                                     ::  forcing_name_AHE    ! xue.lingbo 2026/04/08
 
     integer                                                ::  noahmp_output       ! =0: default output; >0 include additional output
     integer                                                ::  split_output_count

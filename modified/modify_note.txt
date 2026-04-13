@@ -8,3 +8,6 @@
                                           (TRAD_nonUrban == TSK_nonUrban)
 2026.01.18 Read URBLANDUSEF from HRLDAS SETUP FILE
            Use  FRC_URB*URBLANDUSEF as urban fraction
+2026.04.08 add new feature: distributed anthropogenic heat
+                            distributed_ahe_opt = 0 (default, no distributed anthropogenic heat)
+                                                = 3 (read distributed anthropogenic heat (AHE) from forcing data)

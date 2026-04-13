@@ -45,6 +45,7 @@ contains
     if ( .not. allocated (NoahmpIO%ISLTYP)    ) allocate ( NoahmpIO%ISLTYP     (XSTART:XEND,        YSTART:YEND) ) ! soil type
     if ( .not. allocated (NoahmpIO%VEGFRA)    ) allocate ( NoahmpIO%VEGFRA     (XSTART:XEND,        YSTART:YEND) ) ! vegetation fraction []
     if ( .not. allocated (NoahmpIO%URBLANDUSEF)) allocate( NoahmpIO%URBLANDUSEF(XSTART:XEND,        YSTART:YEND) ) ! urban land use fraction []     ! xue.lingbo 2026.01.28
+    if ( .not. allocated (NoahmpIO%AHE)       ) allocate ( NoahmpIO%AHE        (XSTART:XEND,        YSTART:YEND) ) ! distributed anthropogenic heat flux [W m-2]     ! xue.lingbo 2026/04/08
     if ( .not. allocated (NoahmpIO%TMN)       ) allocate ( NoahmpIO%TMN        (XSTART:XEND,        YSTART:YEND) ) ! deep soil temperature [K]
     if ( .not. allocated (NoahmpIO%XLAND)     ) allocate ( NoahmpIO%XLAND      (XSTART:XEND,        YSTART:YEND) ) ! =2 ocean; =1 land/seaice
     if ( .not. allocated (NoahmpIO%XICE)      ) allocate ( NoahmpIO%XICE       (XSTART:XEND,        YSTART:YEND) ) ! fraction of grid that is seaice
@@ -344,6 +345,7 @@ contains
        if ( .not. allocated (NoahmpIO%lb_urb2d)   ) allocate ( NoahmpIO%lb_urb2d    (XSTART:XEND,YSTART:YEND) )
        if ( .not. allocated (NoahmpIO%hgt_urb2d)  ) allocate ( NoahmpIO%hgt_urb2d   (XSTART:XEND,YSTART:YEND) )
        if ( .not. allocated (NoahmpIO%ust)        ) allocate ( NoahmpIO%ust         (XSTART:XEND,YSTART:YEND) )
+       if ( .not. allocated (NoahmpIO%ahe_urb2d)  ) allocate ( NoahmpIO%ahe_urb2d   (XSTART:XEND,YSTART:YEND) ) ! xue.lingbo 2026/04/08
        !ENDIF
          
        !IF(NoahmpIO%SF_URBAN_PHYSICS == 1 ) THEN  ! single layer urban model  
@@ -482,6 +484,7 @@ contains
     NoahmpIO%ZSOIL           = undefined_real
     NoahmpIO%VEGFRA          = undefined_real
     NoahmpIO%URBLANDUSEF     = undefined_real         ! xue.lingbo 2026.01.28
+    NoahmpIO%AHE             = undefined_real         ! xue.lingbo 2026/04/08
     NoahmpIO%TMN             = undefined_real
     NoahmpIO%XLAND           = undefined_real
     NoahmpIO%XICE            = undefined_real
@@ -721,6 +724,7 @@ contains
 
     ! urban model 
     if ( NoahmpIO%SF_URBAN_PHYSICS > 0 ) then
+       NoahmpIO%ahe_urb2d     = undefined_real               ! xue.lingbo 2024/04/08
        NoahmpIO%JULDAY        = undefined_int_neg
        NoahmpIO%IRI_URBAN     = undefined_int_neg
        NoahmpIO%utype_urb2d   = undefined_int_neg
