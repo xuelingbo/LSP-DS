@@ -10,6 +10,11 @@ from tap import tapify
 
 import util
 
+##############################################################################
+# Author: Do Ngoc Khanh
+# https://github.com/HiClimaX/D-DS_WRF/blob/main/get_6h_url.py
+##############################################################################
+
 # %%
 _logger = logging.getLogger(__name__)
 
