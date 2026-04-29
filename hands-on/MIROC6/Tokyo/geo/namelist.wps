@@ -1,0 +1,43 @@
+&share
+ wrf_core             = 'ARW'
+ max_dom              = 3
+ start_date           = '2026-01-01_03:00:00', '2026-01-01_03:00:00', '2026-01-01_03:00:00'
+ end_date             = '2026-01-01_18:00:00', '2026-01-01_18:00:00', '2026-01-01_18:00:00'
+ interval_seconds     = 21600
+ io_form_geogrid      = 2
+ debug_level          = 0
+/
+
+&geogrid
+ parent_id            = 1, 1, 2
+ parent_grid_ratio    = 1, 5, 5
+ i_parent_start       = 1, 21, 39
+ j_parent_start       = 1, 21, 39
+ e_we                 = 61, 101, 121
+ e_sn                 = 61, 101, 121
+ geog_data_res        = 'default', 'bnu_soil_30s+jaxa2modis_2014-2016_100m_epsg4326', 'bnu_soil_30s+jaxa2modis_2014-2016_100m_epsg4326'
+ dx                   = 50000
+ dy                   = 50000
+ map_proj             = 'lambert'
+ ref_lat              = 35.800
+ ref_lon              = 139.600
+ truelat1             = 30
+ truelat2             = 40
+ pole_lat             = 90
+ pole_lon             = 0
+ stand_lon            = 139.600
+ geog_data_path       = '/home/xuelingbo/Build_WRF/WPS_GEOG/'
+ opt_geogrid_tbl_path = './geogrid/'
+/
+
+&ungrib
+ out_format           = 'WPS'
+ prefix               = 'FILE'
+/
+
+&metgrid
+ fg_name              = 'FILE'
+ io_form_metgrid      = 2
+ opt_metgrid_tbl_path = './metgrid'
+/
+
