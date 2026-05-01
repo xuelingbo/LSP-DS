@@ -2485,7 +2485,7 @@ ENDIF
                              TR_URB2D,TB_URB2D,TG_URB2D,TC_URB2D,QC_URB2D, & ! inout
                              TRL_URB3D,TBL_URB3D,TGL_URB3D,                & ! inout
                              SH_URB2D,LH_URB2D,G_URB2D,RN_URB2D,           & ! inout
-                             AHE_URB2D,                                    & ! inout     ! xue.lingbo 2024/04/08
+                             AHE_URB2D,                                    & ! inout     ! xue.lingbo 2026/04/08
                              TS_URB2D, TRAD_URB2D,                         & ! inout     ! xue.lingbo 2024.08.11
                              num_urban_ndm,                                & ! in
                              urban_map_zrd,                                & ! in
@@ -2582,7 +2582,7 @@ ENDIF
    REAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT) :: RN_URB2D
    REAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT) :: TS_URB2D
    REAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT) :: TRAD_URB2D          ! xue.lingbo 2024.08.11
-   REAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT) :: AHE_URB2D           ! xue.lingbo 2024/04/08
+   REAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT) :: AHE_URB2D           ! xue.lingbo 2026/04/08
 
 ! multi-layer UCM variables
    REAL, DIMENSION(ims:ime, 1:urban_map_zrd, jms:jme), INTENT(INOUT) :: TRB_URB4D
@@ -2781,7 +2781,7 @@ ENDIF
       TS_URB2D(I,J)=TSURFACE0_URB(I,J)+0.
       TRAD_URB2D(I,J)=TSURFACE0_URB(I,J)+0.                  ! xue.lingbo 2024.08.11
 
-      AHE_URB2D(I,J)=0.                                      ! xue.lingbo 2024/04/08
+      AHE_URB2D(I,J)=0.                                      ! xue.lingbo 2026/04/08
 
 !     DO K=1,num_roof_layers
 !     DO K=1,num_soil_layers

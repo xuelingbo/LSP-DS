@@ -724,7 +724,7 @@ contains
 
     ! urban model 
     if ( NoahmpIO%SF_URBAN_PHYSICS > 0 ) then
-       NoahmpIO%ahe_urb2d     = undefined_real               ! xue.lingbo 2024/04/08
+       NoahmpIO%ahe_urb2d     = undefined_real               ! xue.lingbo 2026/04/08
        NoahmpIO%JULDAY        = undefined_int_neg
        NoahmpIO%IRI_URBAN     = undefined_int_neg
        NoahmpIO%utype_urb2d   = undefined_int_neg
