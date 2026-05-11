@@ -557,6 +557,7 @@ use module_wrf_error
 
    INTEGER :: iteration, K, NUDAPT 
    INTEGER :: tloc, tloc2, Kalh
+   REAL :: eps_avg, eps_eff                                           ! xue.lingbo 2026/05/05
 
 !===Yang,2014/10/08, urban hydrological variables for single layer UCM===
    REAL :: FLXHUMRP, FLXHUMBP, FLXHUMGP
@@ -568,7 +569,6 @@ use module_wrf_error
    REAL :: RUNOFF1, RUNOFF2, RUNOFF3
    REAL :: SGR, SGR1, T1VGR, CHGR, ALPHAGR 
    REAL :: FLXTHGR, FLXHUMGR, HGR, ELEGR, G0GR
-   REAL :: eps_avg, eps_eff                                           ! xue.lingbo 2026/05/05
    REAL :: QS0GR, EPGR, EDIR, ETTR, FV, DTGR, DRIP
 !   REAL :: DQS0GRDTGR, ETR, ECR,RAIN1, RAINDR, DEW, ETAR, BETGR
    REAL :: DQS0GRDTGR, ECR,RAIN1, RAINDR, DEW, ETAR, BETGR
@@ -1475,7 +1475,7 @@ ENDIF
 !-------------------------------------------------------------------------------
 !===Yang, 2014/10/08, cal. ah. alh. green roof===
  if(groption==1) then
-   if(ahoption==1 .or. distributed_ahe_opt==3) then
+   if(ahoption==1 .or. distributed_ahe_opt==3) then                                         ! xue.lingbo 2026/04/08
      FLXTH  = ((1.-FGR)*R*FLXTHR + FGR*R*FLXTHGR + W*FLXTHB + RW*FLXTHG)+ AH/RHOO/CPP
    else
      FLXTH  = ((1.-FGR)*R*FLXTHR + FGR*R*FLXTHGR + W*FLXTHB + RW*FLXTHG)
@@ -1489,7 +1489,7 @@ ENDIF
    FLXG =   ((1.-FGR)*R*G0R + FGR*R*G0GR+ W*G0B + RW*G0G)
    LNET =   (1.-FGR) * R * RR + FGR *R* RGR + W * RB +  RW * RG 
  else
-   if(ahoption==1 .or. distributed_ahe_opt==3) then
+   if(ahoption==1 .or. distributed_ahe_opt==3) then                                         ! xue.lingbo 2026/04/08
      FLXTH  = ( R*FLXTHR  + W*FLXTHB  + RW*FLXTHG ) + AH/RHOO/CPP
    else
      FLXTH  = ( R*FLXTHR  + W*FLXTHB  + RW*FLXTHG )
