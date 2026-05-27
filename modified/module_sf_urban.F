@@ -557,6 +557,7 @@ use module_wrf_error
 
    INTEGER :: iteration, K, NUDAPT 
    INTEGER :: tloc, tloc2, Kalh
+   REAL :: eps_avg, eps_eff                                           ! xue.lingbo 2026/05/05
 
 !===Yang,2014/10/08, urban hydrological variables for single layer UCM===
    REAL :: FLXHUMRP, FLXHUMBP, FLXHUMGP
@@ -777,7 +778,7 @@ use module_wrf_error
 
 
 ! Miao, 2007/01/17, cal. ah
-! xue.Lingbo 2026/04/08, modify the calculation of AH to consider the distributed anthropogenic heat option
+! xue.lingbo 2026/04/08, modify the calculation of AH to consider the distributed anthropogenic heat option
    if(distributed_ahe_opt==3) then
      AH = AHE
    else
@@ -1474,7 +1475,7 @@ ENDIF
 !-------------------------------------------------------------------------------
 !===Yang, 2014/10/08, cal. ah. alh. green roof===
  if(groption==1) then
-   if(ahoption==1 .or. distributed_ahe_opt==3) then
+   if(ahoption==1 .or. distributed_ahe_opt==3) then                                         ! xue.lingbo 2026/04/08
      FLXTH  = ((1.-FGR)*R*FLXTHR + FGR*R*FLXTHGR + W*FLXTHB + RW*FLXTHG)+ AH/RHOO/CPP
    else
      FLXTH  = ((1.-FGR)*R*FLXTHR + FGR*R*FLXTHGR + W*FLXTHB + RW*FLXTHG)
@@ -1488,7 +1489,7 @@ ENDIF
    FLXG =   ((1.-FGR)*R*G0R + FGR*R*G0GR+ W*G0B + RW*G0G)
    LNET =   (1.-FGR) * R * RR + FGR *R* RGR + W * RB +  RW * RG 
  else
-   if(ahoption==1 .or. distributed_ahe_opt==3) then
+   if(ahoption==1 .or. distributed_ahe_opt==3) then                                         ! xue.lingbo 2026/04/08
      FLXTH  = ( R*FLXTHR  + W*FLXTHB  + RW*FLXTHG ) + AH/RHOO/CPP
    else
      FLXTH  = ( R*FLXTHR  + W*FLXTHB  + RW*FLXTHG )
@@ -1607,7 +1608,14 @@ ENDIF
 
    Q2 = QS + (QA-QS)*(PSIT2/PSIT)    ! humidity at 2 m       [-]
 
-   TRAD_URB = (LW/SIG_SI/0.88)**0.25       ! Radiative temperature [K]              ! xue.lingbo 2024/08/11
+   ! TRAD_URB = (LW/SIG_SI/0.88)**0.25       ! Radiative temperature [K]              ! xue.lingbo 2024/08/11
+   
+   ! effective canyon emissivity: area-weighted emissivity with canyon trapping effect  ! xue.lingbo 2026/05/05
+   eps_avg = (R*EPSR + W*EPSB + RW*EPSG) / (R + W + RW)
+   eps_eff = eps_avg / (1. - (1.-eps_avg)*(1.-SVF))
+   ! LW = LLG*(1-eps_eff) + eps_eff*SIG_SI*TRAD_URB**4.
+   ! Radiative temperature [K] 
+   TRAD_URB = ((LW - (1.-eps_eff)*LLG) / (eps_eff*SIG_SI))**0.25
 
    END SUBROUTINE urban
 !===============================================================================
@@ -2485,7 +2493,7 @@ ENDIF
                              TR_URB2D,TB_URB2D,TG_URB2D,TC_URB2D,QC_URB2D, & ! inout
                              TRL_URB3D,TBL_URB3D,TGL_URB3D,                & ! inout
                              SH_URB2D,LH_URB2D,G_URB2D,RN_URB2D,           & ! inout
-                             AHE_URB2D,                                    & ! inout     ! xue.lingbo 2024/04/08
+                             AHE_URB2D,                                    & ! inout     ! xue.lingbo 2026/04/08
                              TS_URB2D, TRAD_URB2D,                         & ! inout     ! xue.lingbo 2024.08.11
                              num_urban_ndm,                                & ! in
                              urban_map_zrd,                                & ! in
@@ -2582,7 +2590,7 @@ ENDIF
    REAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT) :: RN_URB2D
    REAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT) :: TS_URB2D
    REAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT) :: TRAD_URB2D          ! xue.lingbo 2024.08.11
-   REAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT) :: AHE_URB2D           ! xue.lingbo 2024/04/08
+   REAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT) :: AHE_URB2D           ! xue.lingbo 2026/04/08
 
 ! multi-layer UCM variables
    REAL, DIMENSION(ims:ime, 1:urban_map_zrd, jms:jme), INTENT(INOUT) :: TRB_URB4D
@@ -2781,7 +2789,7 @@ ENDIF
       TS_URB2D(I,J)=TSURFACE0_URB(I,J)+0.
       TRAD_URB2D(I,J)=TSURFACE0_URB(I,J)+0.                  ! xue.lingbo 2024.08.11
 
-      AHE_URB2D(I,J)=0.                                      ! xue.lingbo 2024/04/08
+      AHE_URB2D(I,J)=0.                                      ! xue.lingbo 2026/04/08
 
 !     DO K=1,num_roof_layers
 !     DO K=1,num_soil_layers
