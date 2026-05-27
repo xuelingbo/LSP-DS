@@ -6,7 +6,6 @@ import csv
 from pathlib import Path
 
 import pandas as pd
-from tap import tapify
 
 from get_6h_url import get_download_urls
 
@@ -28,6 +27,7 @@ FUTURE_END_DATE     = "2100-12-31"
 DATA_DIR = Path("/home/xuelingbo/LSP-DS-HiClimaX/hands-on/MIROC6/Tokyo/raw")
 EXCLUDE_NODES: list[str] = []
 # EXCLUDE_NODES = ["esgf-node.llnl.gov", "esgf.ceda.ac.uk"]
+EXCLUDE_NODES = ["esgf-data02.diasjp.net"]
 # ============================================================
 
 _logger = logging.getLogger(__name__)
@@ -84,11 +84,18 @@ def check_missing(
     import re
     missing = []
     for var in variables:
+        if var["table_id"] == "fx":
+            # fx files are experiment-independent; just check if any exist
+            pattern = f"{var['var_id']}_{var['table_id']}_{SOURCE_ID}_*.nc"
+            covered = len(list(output_dir.glob(pattern))) > 0
+            if not covered:
+                missing.append(var)
+            continue
         pattern = f"{var['var_id']}_{var['table_id']}_{SOURCE_ID}_{experiment_id}_*.nc"
         files = list(output_dir.glob(pattern))
         covered = False
         for f in files:
-            m = re.search(r"_(\d{4})\d{8}-(\d{4})\d{8}\.nc$", f.name)
+            m = re.search(r"_(\d{4})\d{2,8}-(\d{4})\d{2,8}\.nc$", f.name)
             if m:
                 file_year_start, file_year_end = int(m.group(1)), int(m.group(2))
                 if file_year_start <= year_end and file_year_end >= year_start:
@@ -122,20 +129,26 @@ def download_miroc6(
 
     for var in variables:
         _logger.info(f"  Fetching URLs: {var['var_id']} ({var['table_id']})")
-        try:
-            urls = get_download_urls(
-                variable_id=var["var_id"],
-                table_id=var["table_id"],
-                frequency=var["frequency"],
-                source_id=SOURCE_ID,
-                member_id=MEMBER_ID,
-                experiment_id=experiment_id,
-                start_date=pd.Timestamp(start_date),
-                end_date=pd.Timestamp(end_date),
-                exclude_nodes=EXCLUDE_NODES,
-            )
-        except Exception as e:
-            _logger.error(f"  Failed to get URLs for {var['var_id']}: {e}")
+        urls = None
+        for attempt in range(1, 4):
+            try:
+                urls = get_download_urls(
+                    variable_id=var["var_id"],
+                    table_id=var["table_id"],
+                    frequency=var["frequency"],
+                    source_id=SOURCE_ID,
+                    member_id=MEMBER_ID,
+                    experiment_id=experiment_id,
+                    start_date=pd.Timestamp(start_date),
+                    end_date=pd.Timestamp(end_date),
+                    exclude_nodes=EXCLUDE_NODES,
+                )
+                break
+            except Exception as e:
+                _logger.warning(f"  Attempt {attempt}/3 failed for {var['var_id']}: {e}")
+                if attempt == 3:
+                    _logger.error(f"  Giving up on {var['var_id']} after 3 attempts.")
+        if urls is None:
             continue
 
         for url in urls:
@@ -194,22 +207,35 @@ def main():
         download_miroc6(FUTURE_EXPERIMENT, FUTURE_START_DATE, FUTURE_END_DATE, variables, DATA_DIR)
         return
 
-    # Default: download all variables, then check and save missing
+    # Default: check first, then download only missing variables.
+    # Comment/uncomment entries in `experiments` to control which are processed.
+    experiments = [
+        (HIST_EXPERIMENT,   HIST_START_DATE,   HIST_END_DATE),
+        # (FUTURE_EXPERIMENT, FUTURE_START_DATE, FUTURE_END_DATE),
+    ]
+
     variables = read_variables(CSV_FILE)
-    # download_miroc6(HIST_EXPERIMENT, HIST_START_DATE, HIST_END_DATE, variables, DATA_DIR)
-    # download_miroc6(FUTURE_EXPERIMENT, FUTURE_START_DATE, FUTURE_END_DATE, variables, DATA_DIR)
 
-    missing = (
-        check_missing(HIST_EXPERIMENT, variables, DATA_DIR,
-                      int(HIST_START_DATE[:4]), int(HIST_END_DATE[:4]))
-        + check_missing(FUTURE_EXPERIMENT, variables, DATA_DIR,
-                        int(FUTURE_START_DATE[:4]), int(FUTURE_END_DATE[:4]))
-    )
+    for exp_id, s_date, e_date in experiments:
+        missing_vars = check_missing(exp_id, variables, DATA_DIR,
+                                     int(s_date[:4]), int(e_date[:4]))
+        if not missing_vars:
+            print(f"\n=== {exp_id}: all variables present, skipping download. ===")
+            continue
+        print(f"\n=== {exp_id}: {len(missing_vars)} variable(s) missing, downloading... ===")
+        for v in missing_vars:
+            print(f"  {v['var_id']} ({v['table_id']})")
+        download_miroc6(exp_id, s_date, e_date, missing_vars, DATA_DIR)
 
-    # Deduplicate missing vars by var_id+table_id
+    # Final check across all experiments
+    all_missing = []
+    for exp_id, s_date, e_date in experiments:
+        all_missing += check_missing(exp_id, variables, DATA_DIR,
+                                     int(s_date[:4]), int(e_date[:4]))
+
     seen = set()
     missing_unique = []
-    for v in missing:
+    for v in all_missing:
         key = (v["var_id"], v["table_id"])
         if key not in seen:
             seen.add(key)
@@ -218,7 +244,7 @@ def main():
     if missing_unique:
         missing_csv = DATA_DIR / "MIROC6_missing.csv"
         save_missing_csv(missing_unique, missing_csv)
-        print("\n=== Missing variables ===")
+        print("\n=== Still missing after download ===")
         for v in missing_unique:
             print(f"  {v['var_id']} ({v['table_id']})")
         print(f"Saved to: {missing_csv}")

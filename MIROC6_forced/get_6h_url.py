@@ -10,11 +10,6 @@ from tap import tapify
 
 import util
 
-##############################################################################
-# Author: Do Ngoc Khanh
-# https://github.com/HiClimaX/D-DS_WRF/blob/main/get_6h_url.py
-##############################################################################
-
 # %%
 _logger = logging.getLogger(__name__)
 
@@ -30,7 +25,7 @@ def get_download_urls(
     start_date: pd.Timestamp,
     end_date: pd.Timestamp,
     exclude_nodes: list[str] = [],
-    esgf_url: str = "http://esgf-node.llnl.gov/esg-search",
+    esgf_url: str = "https://esgf-data.dkrz.de/esg-search",
 ) -> list[str]:
     """
     Reference: https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
@@ -84,10 +79,17 @@ def get_download_urls(
         # fixed files (i.e., not changing with time)
         return [file.download_url for file in files]
 
+    def _parse_ts(s):
+        fmt = {12: '%Y%m%d%H%M', 8: '%Y%m%d', 6: '%Y%m'}.get(len(s), '%Y%m%d%H%M')
+        return pd.to_datetime(s, format=fmt)
+
     download_urls = []
     for file in files:
-        regex = r".*_(\d{12})-(\d{12}).nc\|.*"
-        file_stime, file_etime = pd.to_datetime(re.match(regex, file.file_id).groups())
+        m = re.match(r".*_(\d{6,12})-(\d{6,12})\.nc\|.*", file.file_id)
+        if m is None:
+            _logger.warning(f"Skipping unrecognized file_id format: {file.file_id}")
+            continue
+        file_stime, file_etime = _parse_ts(m.group(1)), _parse_ts(m.group(2))
         if max(file_stime, start_date) <= min(file_etime, end_date):
             download_urls.append(file.download_url)
 
