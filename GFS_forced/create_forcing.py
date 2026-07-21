@@ -21,8 +21,8 @@ from scipy.interpolate import RectBivariateSpline
 import sys
 import matplotlib.pyplot as plot
 
-def create_LDASIN_files(start_date, cycle_hour, fhour, raw_data_dir, output_dir, geo_em_file, upper_level_m):
-    
+def create_LDASIN_files(start_date, cycle_hour, fhour, raw_data_dir, output_dir, geo_em, upper_level_m, geo_em_file):
+
     if not os.path.exists(output_dir+"/LDASIN/"+start_date.replace("-", "")):
         os.makedirs(output_dir+"/LDASIN/"+start_date.replace("-", ""))
 
@@ -32,14 +32,14 @@ def create_LDASIN_files(start_date, cycle_hour, fhour, raw_data_dir, output_dir,
     # sp     :  surface pressure
     # orog   :  surface geopotential height
     # prate  :  precipitation rate
-    ds_sfc_instant = xr.open_dataset(os.path.join(raw_data_dir, filename), engine='cfgrib', 
+    ds_sfc_instant = xr.open_dataset(os.path.join(raw_data_dir, filename), engine='cfgrib',
                            filter_by_keys={'stepType': 'instant', 'typeOfLevel': 'surface'})
     # prate  :  precipitation rate (accumulated over the forecast step)
     # sdswrf :  downward short-wave radiation flux (accumulated over the forecast step)
     # sdlwrf :  downward long-wave radiation flux (accumulated over the forecast step)
-    ds_sfc_avg = xr.open_dataset(os.path.join(raw_data_dir, filename), engine='cfgrib', 
+    ds_sfc_avg = xr.open_dataset(os.path.join(raw_data_dir, filename), engine='cfgrib',
                            filter_by_keys={'stepType': 'avg', 'typeOfLevel': 'surface'})
-    # t      :  temperature 
+    # t      :  temperature
     # q      :  specific humidity
     # u      :  u-component of wind
     # v      :  v-component of wind
@@ -47,24 +47,27 @@ def create_LDASIN_files(start_date, cycle_hour, fhour, raw_data_dir, output_dir,
     ds_pres_instant = xr.open_dataset(os.path.join(raw_data_dir, filename), engine='cfgrib',
                            filter_by_keys={'stepType': 'instant', 'typeOfLevel': 'isobaricInhPa'})
 
-    geo_em = xr.open_dataset(geo_em_file)
     geo_lat, geo_lon = geo_em.XLAT_M.values[0], geo_em.XLONG_M.values[0]
     geo_lat_flat, geo_lon_flat = geo_lat.ravel(), geo_lon.ravel()
+    # pad by more than one GFS grid spacing (0.25 deg) so the subset always
+    # keeps enough surrounding points to interpolate, even for domains
+    # smaller than the GFS grid spacing
+    GFS_PAD = 0.5
     def subset(ds):
-        return ds.sel(latitude=slice(geo_lat.min(), geo_lat.max()),
-                      longitude=slice(geo_lon.min(), geo_lon.max()))
-    ds_sfc_instant, ds_sfc_avg, ds_pres_instant  = subset(ds_sfc_instant), subset(ds_sfc_avg), subset(ds_pres_instant)
-    raw_lat, raw_lon = ds_sfc_instant.latitude.values, ds_sfc_instant.longitude.values
+        return ds.sel(latitude=slice(geo_lat.min() - GFS_PAD, geo_lat.max() + GFS_PAD),
+                      longitude=slice(geo_lon.min() - GFS_PAD, geo_lon.max() + GFS_PAD))
+    ds_sfc_instant_sub, ds_sfc_avg_sub, ds_pres_instant_sub = subset(ds_sfc_instant), subset(ds_sfc_avg), subset(ds_pres_instant)
+    raw_lat, raw_lon = ds_sfc_instant_sub.latitude.values, ds_sfc_instant_sub.longitude.values
 
     vars = {
-        't':        {'ds': ds_pres_instant, 'name': 'T2D',      'attrs': {'units': 'K'}},
-        'q':        {'ds': ds_pres_instant, 'name': 'Q2D',      'attrs': {'units': 'kg/kg'}},
-        'u':        {'ds': ds_pres_instant, 'name': 'U2D',      'attrs': {'units': 'm/s'}},
-        'v':        {'ds': ds_pres_instant, 'name': 'V2D',      'attrs': {'units': 'm/s'}},
-        'sp':       {'ds': ds_sfc_instant,  'name': 'PSFC',     'attrs': {'units': 'Pa'}},
-        'sdlwrf':   {'ds': ds_sfc_avg,      'name': 'LWDOWN',   'attrs': {'units': 'W/m^2'}},
-        'sdswrf':   {'ds': ds_sfc_avg,      'name': 'SWDOWN',   'attrs': {'units': 'W/m^2'}},
-        'prate':    {'ds': ds_sfc_avg,      'name': 'RAINRATE', 'attrs': {'units': 'kg/m^2/s'}},
+        't':        {'ds': ds_pres_instant_sub, 'name': 'T2D',      'attrs': {'units': 'K'}},
+        'q':        {'ds': ds_pres_instant_sub, 'name': 'Q2D',      'attrs': {'units': 'kg/kg'}},
+        'u':        {'ds': ds_pres_instant_sub, 'name': 'U2D',      'attrs': {'units': 'm/s'}},
+        'v':        {'ds': ds_pres_instant_sub, 'name': 'V2D',      'attrs': {'units': 'm/s'}},
+        'sp':       {'ds': ds_sfc_instant_sub,  'name': 'PSFC',     'attrs': {'units': 'Pa'}},
+        'sdlwrf':   {'ds': ds_sfc_avg_sub,      'name': 'LWDOWN',   'attrs': {'units': 'W/m^2'}},
+        'sdswrf':   {'ds': ds_sfc_avg_sub,      'name': 'SWDOWN',   'attrs': {'units': 'W/m^2'}},
+        'prate':    {'ds': ds_sfc_avg_sub,      'name': 'RAINRATE', 'attrs': {'units': 'kg/m^2/s'}},
         'LAI12M':   {'ds': None,            'name':'LAI',       'attrs': {'units': 'm^2/m^2'}},
         'GREENFRAC':{'ds': None,            'name':'VEGFRA',    'attrs': {'units': '%'}},
     }
@@ -83,7 +86,7 @@ def create_LDASIN_files(start_date, cycle_hour, fhour, raw_data_dir, output_dir,
             LDASIN_file[vars[var]['name']] = (('Time','south_north','west_east'), [data_var_interpolated])
             LDASIN_file[vars[var]['name']].attrs['units'] = vars[var]['attrs']['units']
         elif var == 't':
-            gh = ds_pres_instant['gh']
+            gh = ds_pres_instant_sub['gh']
             data_var_correct_to_msl = data_var - (-0.0065 * gh / 9.80665)  
             interp_spline = RectBivariateSpline(raw_lat, raw_lon, data_var_correct_to_msl, kx=1, ky=1)
             data_var_interpolated = interp_spline.ev(geo_lat_flat, geo_lon_flat).reshape(geo_lat.shape)
@@ -97,15 +100,21 @@ def create_LDASIN_files(start_date, cycle_hour, fhour, raw_data_dir, output_dir,
             else:
                 raw_data_file = xr.open_dataset(os.path.join(output_dir,'LDASIN', start_date.replace("-", ""), f'{var}.nc'))
                 data_var = [raw_data_file[var].sel(date='2021'+start_date[-6:]).values]
+            raw_data_file.close()
             LDASIN_file[vars[var]['name']] = (('Time','south_north','west_east'), data_var)
             LDASIN_file[vars[var]['name']].attrs['units'] = vars[var]['attrs']['units']
 
-    encoding=[{var: {'_FillValue': None}} for var in LDASIN_file.variables]    
+    ds_sfc_instant.close()
+    ds_sfc_avg.close()
+    ds_pres_instant.close()
+
+    encoding=[{var: {'_FillValue': None}} for var in LDASIN_file.variables]
     output_filename = f"{time.strftime('%Y%m%d%H')}.LDASIN_DOMAIN{geo_em_file[-4]}"
     LDASIN_file.to_netcdf(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), output_filename), encoding=encoding[0])
+    LDASIN_file.close()
     print(output_filename)
                         
-def create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em_file, lcz=0):
+def create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em, geo_em_file, lcz=0):
     
     if not os.path.exists(output_dir+"/LDASIN/"+start_date.replace("-", "")):
         os.makedirs(output_dir+"/LDASIN/"+start_date.replace("-", ""))
@@ -144,7 +153,6 @@ def create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em_f
         "CANWAT": {'units': 'kg/m^2'} , # set CANWAT = 0
     }
     
-    geo_em = xr.open_dataset(geo_em_file)
     geo_lat, geo_lon = geo_em.XLAT_M.values[0], geo_em.XLONG_M.values[0]
     geo_lat_flat, geo_lon_flat = geo_lat.ravel(), geo_lon.ravel()
 
@@ -164,31 +172,36 @@ def create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em_f
                                backend_kwargs={'filter_by_keys': {'typeOfLevel': 'surface'}})
     ds_soil = xr.open_dataset(raw_data_path, engine='cfgrib',
                                backend_kwargs={'filter_by_keys': {'typeOfLevel': 'depthBelowLandLayer'}})
-    
-    def subset(ds):
-        return ds.sel(latitude=slice(geo_lat.min(), geo_lat.max()),
-                      longitude=slice(geo_lon.min(), geo_lon.max()))
 
-    ds_sfc  = subset(ds_sfc)
-    ds_soil = subset(ds_soil)
-    raw_lat, raw_lon = ds_sfc.latitude.values, ds_sfc.longitude.values
+    # pad by more than one GFS grid spacing (0.25 deg) so the subset always
+    # keeps enough surrounding points to interpolate, even for domains
+    # smaller than the GFS grid spacing
+    GFS_PAD = 0.5
+    def subset(ds):
+        return ds.sel(latitude=slice(geo_lat.min() - GFS_PAD, geo_lat.max() + GFS_PAD),
+                      longitude=slice(geo_lon.min() - GFS_PAD, geo_lon.max() + GFS_PAD))
+
+    ds_sfc_sub  = subset(ds_sfc)
+    ds_soil_sub = subset(ds_soil)
+    raw_lat, raw_lon = ds_sfc_sub.latitude.values, ds_sfc_sub.longitude.values
 
     # GFS cfgrib shortNames: t=TMP, sdwe=WEASD, st=TSOIL, soilw=SOILW
     gfs_vars = [
-        (ds_sfc,  't',   None),     # [0] skin temperature (TMP surface)
-        (ds_soil, 'soilw', 0),      # [1] soil moisture layer 1
-        (ds_soil, 'soilw', 1),      # [2] soil moisture layer 2
-        (ds_soil, 'soilw', 2),      # [3] soil moisture layer 3
-        (ds_soil, 'soilw', 3),      # [4] soil moisture layer 4
-        (ds_soil, 'st',  0),        # [5] soil temperature layer 1
-        (ds_soil, 'st',  1),        # [6] soil temperature layer 2
-        (ds_soil, 'st',  2),        # [7] soil temperature layer 3
-        (ds_soil, 'st',  3),        # [8] soil temperature layer 4
-        (ds_sfc,  'sdwe', None),    # [9] snow depth (WEASD)
+        (ds_sfc_sub,  't',   None),     # [0] skin temperature (TMP surface)
+        (ds_soil_sub, 'soilw', 0),      # [1] soil moisture layer 1
+        (ds_soil_sub, 'soilw', 1),      # [2] soil moisture layer 2
+        (ds_soil_sub, 'soilw', 2),      # [3] soil moisture layer 3
+        (ds_soil_sub, 'soilw', 3),      # [4] soil moisture layer 4
+        (ds_soil_sub, 'st',  0),        # [5] soil temperature layer 1
+        (ds_soil_sub, 'st',  1),        # [6] soil temperature layer 2
+        (ds_soil_sub, 'st',  2),        # [7] soil temperature layer 3
+        (ds_soil_sub, 'st',  3),        # [8] soil temperature layer 4
+        (ds_sfc_sub,  'sdwe', None),    # [9] snow depth (WEASD)
     ]
 
     def var_interpolate(data_var):
         data_var = data_var.squeeze() \
+                       .rio.set_spatial_dims(x_dim="longitude", y_dim="latitude") \
                        .rio.write_crs("epsg:4326") \
                        .rio.write_nodata(np.nan) \
                        .rio.interpolate_na().values
@@ -312,62 +325,70 @@ def create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em_f
     setup_file.attrs = geo_em.attrs
 
     output_filename = f"HRLDAS_setup_{pd.to_datetime(start_date).strftime('%Y%m%d')}01_d{geo_em_file[-4]}"
-    
-    setup_file.to_netcdf(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), output_filename))
 
-def create_lai_vegfra(geo_em_file, output_dir, start_date):
+    setup_file.to_netcdf(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), output_filename))
+    setup_file.close()
+    LAI.close()
+    ds_sfc.close()
+    ds_soil.close()
+
+def create_lai_vegfra(geo_em, output_dir, start_date):
 
     if not os.path.exists(output_dir+"/LDASIN/"+start_date.replace("-", "")):
         os.makedirs(output_dir+"/LDASIN/"+start_date.replace("-", ""))
 
+    iswater = int(geo_em.attrs['ISWATER'])
+    islake = int(geo_em.attrs['ISLAKE'])
+    LU_geo = geo_em['LU_INDEX'].sel(Time=0)
+
     for var in ('LAI12M', 'GREENFRAC'):
 
-        geo = xr.open_dataset(geo_em_file)
-        LAI_geo = geo[var].sel(Time=0)
+        LAI_geo = geo_em[var].sel(Time=0)
 
-        LAI = xr.concat([LAI_geo, LAI_geo, LAI_geo, LAI_geo], dim="month")
+        LAI_month = xr.concat([LAI_geo, LAI_geo, LAI_geo, LAI_geo], dim="month")
         month = pd.date_range('2019-01-01', periods=48, freq='MS') + pd.DateOffset(days=14)
-        LAI["month"] = ("month", month)
+        LAI_month["month"] = ("month", month)
+        LAI_month = LAI_month.rename({'month': 'date'})
 
-        date = pd.date_range('2019-01-15', '2022-12-15')
-        LAI=LAI.rename({'month': 'date'})
-        LAI=LAI.interp(date=date).to_dataset()
-        
-        # vegfra calibration
-        if var=='GREENFRAC':
-            LAI[var] = xr.where(LAI[var]<=0 ,0.01, LAI[var])
-            LAI = LAI * 100  
-        
-        # (iswater || islake ) == 0
-        iswater = int(geo.attrs['ISWATER'])
-        islake = int(geo.attrs['ISLAKE'])
-        LU_geo = geo['LU_INDEX'].sel(Time=0)
-        mask = ((LU_geo==iswater)|(LU_geo==islake)).expand_dims(dim={"date": date}, axis=0)
-        LAI[var] = xr.where(mask, 0, LAI[var])
+        # interpolate one target year at a time instead of a full 4-year daily
+        # series (900x900x1461 days ~= 9.5GB per var was OOM-killing the box)
+        for year, suffix in ((2020, '_leap'), (2021, '')):
 
-        if var=='LAI12M':
-            LAI.sel(date=slice('2020-01-01','2020-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), 'LAI12M_leap.nc'))
-            LAI.sel(date=slice('2021-01-01','2021-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), 'LAI12M.nc'))
-        else:
-            LAI.sel(date=slice('2020-01-01','2020-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), 'GREENFRAC_leap.nc'))
-            LAI.sel(date=slice('2021-01-01','2021-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), 'GREENFRAC.nc'))
+            date = pd.date_range(f'{year}-01-01', f'{year}-12-31')
+            LAI = LAI_month.interp(date=date).to_dataset()
+
+            # vegfra calibration
+            if var == 'GREENFRAC':
+                LAI[var] = xr.where(LAI[var] <= 0, 0.01, LAI[var])
+                LAI = LAI * 100
+
+            # (iswater || islake) == 0
+            mask = ((LU_geo == iswater) | (LU_geo == islake)).expand_dims(dim={"date": date}, axis=0)
+            LAI[var] = xr.where(mask, 0, LAI[var])
+
+            LAI.to_netcdf(os.path.join(output_dir, 'LDASIN', start_date.replace("-", ""), f'{var}{suffix}.nc'))
+            LAI.close()
 
 
 if __name__ == '__main__':
 
-    start_date = '2026-03-31'
+    start_date = '2026-07-20'
     n_days = 5
     cycle_hour    = '00'
     upper_level_m = 50
 
     raw_data_dir = f'../hands-on/GFS/Tokyo/raw/{start_date.replace("-","")}'
     output_dir = '../hands-on/GFS/Tokyo/'
-    geo_em_file = '../hands-on/GFS/Tokyo/geo/geo_em.d03.nc'
+    geo_em_file = '../hands-on/GFS/Tokyo/geo/geo_em.d01.nc'
 
-    create_lai_vegfra(geo_em_file, output_dir, start_date)
-    create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em_file, lcz=0)
+    geo_em = xr.open_dataset(geo_em_file)
+
+    create_lai_vegfra(geo_em, output_dir, start_date)
+    create_setup_file(start_date, cycle_hour, raw_data_dir, output_dir, geo_em, geo_em_file, lcz=0)
 
     for fhour in range(1, n_days*24+1, 1):
-        create_LDASIN_files(start_date, cycle_hour, fhour, raw_data_dir, output_dir, geo_em_file, upper_level_m)
+        create_LDASIN_files(start_date, cycle_hour, fhour, raw_data_dir, output_dir, geo_em, upper_level_m, geo_em_file)
+
+    geo_em.close()
         
         

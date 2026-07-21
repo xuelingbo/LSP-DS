@@ -227,9 +227,9 @@ if __name__ == "__main__":
     # ------------------------------------------------------------------ #
     # User settings
     # ------------------------------------------------------------------ #
-    date       = "20260331"        # YYYYMMDD
+    date       = "20260720"        # YYYYMMDD
     cycle_hour = "00"              # GFS cycle: "00", "06", "12", "18"
-    n_days     = 20                         # number of forecast days
+    n_days     = 7                         # number of forecast days
     interval   = 1                         # forecast hour interval (1 or 3)
 
     print(f"[check] Querying available forecast hours from S3 ...")

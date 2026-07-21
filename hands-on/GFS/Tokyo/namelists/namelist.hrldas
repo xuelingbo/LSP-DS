@@ -1,12 +1,12 @@
 &NOAHLSM_OFFLINE
 
- HRLDAS_SETUP_FILE = "/home/xuelingbo/LSP-DS/hands-on/GFS/Tokyo/LDASIN/20260331/HRLDAS_setup_2026033101_d3"
- INDIR = "/home/xuelingbo/LSP-DS/hands-on/GFS/Tokyo/LDASIN/20260331/"
- OUTDIR = "/home/xuelingbo/LSP-DS/hands-on/GFS/Tokyo/LDASOUT/20260331/"
+ HRLDAS_SETUP_FILE = "/home/xuelingbo/LSP-DS-forecasting/hands-on/GFS/Tokyo/LDASIN/20260720/HRLDAS_setup_2026072001_d1"
+ INDIR = "/home/xuelingbo/LSP-DS-forecasting/hands-on/GFS/Tokyo/LDASIN/20260720/"
+ OUTDIR = "/home/xuelingbo/LSP-DS-forecasting/hands-on/GFS/Tokyo/LDASOUT/20260720/"
 
  START_YEAR  = 2026
- START_MONTH = 03
- START_DAY   = 31
+ START_MONTH = 07
+ START_DAY   = 20
  START_HOUR  = 01
  START_MIN   = 00
 
