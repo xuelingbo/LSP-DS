@@ -16,11 +16,30 @@ import xesmf as xe
 from scipy.interpolate import RectBivariateSpline
 # import mpl_toolkits.basemap
 
+def saturation_vapor_pressure(t):
+    # Bolton (1980), t in K, returns Pa
+    return 611.2 * np.exp(17.67 * (t - 273.15) / (t - 29.65))
+
+def q_to_rh(q, t, p):
+    # specific humidity (kg/kg) -> relative humidity (%)
+    e = q * p / (0.622 + 0.378 * q)
+    return e / saturation_vapor_pressure(t) * 100
+
+def rh_to_q(rh, t, p):
+    # relative humidity (%) -> specific humidity (kg/kg)
+    e = rh / 100 * saturation_vapor_pressure(t)
+    return 0.622 * e / (p - 0.378 * e)
+
 def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_file, levelist, ZLVL, 
-                        ahe_file=None, ahe_profile=None, utc_offset=None, pgw_file=False):
-    
-    if not os.path.exists(output_dir+"/LDASIN"):
-        os.makedirs(output_dir+"/LDASIN")
+                        ahe_file=None, ahe_profile=None, utc_offset=None, pgw_file=None):
+
+    if not os.path.exists(output_dir+"/LDASIN-Common"):
+        os.makedirs(output_dir+"/LDASIN-Common")
+
+    # CTL run (no PGW delta) -> LDASIN-CTL; PGW run -> LDASIN-PGW
+    ldasin_dir = os.path.join(output_dir, 'LDASIN-PGW' if pgw_file else 'LDASIN-CTL')
+    if not os.path.exists(ldasin_dir):
+        os.makedirs(ldasin_dir)
     
     variables ={'t': {'name':'T2D', 'attrs':{'units':'K'}}, 
                 'q': {'name':'Q2D', 'attrs':{'units':'kg/kg'}},
@@ -38,10 +57,6 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
     geo_em = xr.open_dataset(geo_em_file)
     geo_lat, geo_lon = geo_em.XLAT_M.values[0], geo_em.XLONG_M.values[0]
     geo_lat_flat, geo_lon_flat = geo_lat.ravel(), geo_lon.ravel()
-    
-    z_file = xr.open_dataset(os.path.join(raw_data_dir, 'z_out.grib'), engine='cfgrib')
-    z_file_domain = z_file.sel(latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5), 
-                              longitude=slice(geo_lon.min()-0.5, geo_lon.max()+0.5))
     
     def bounds_1d(c):
         b = np.empty(len(c) + 1)
@@ -151,11 +166,11 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
 
     # Pre-interpolate PGW deltas to the model domain (computed once, reused each timestep)
     _pgw_delta_map = {
-        'ta':   ('T2D',      'add'),
-        'hus':  ('Q2D',      'add'),
-        'ua':   ('U2D',      'add'),
-        'va':   ('V2D',      'add'),
-        'psl':  ('PSFC',     'add'),
+        'tas':  ('T2D',      'add'),
+        'hurs': ('Q2D',      'rh'),         # q from (RH + dRH) at the PGW temperature
+        'uas':  ('U2D',      'add'),
+        'vas':  ('V2D',      'add'),
+        'ps':   ('PSFC',     'add'),
         'rlds': ('LWDOWN',   'add'),
         'rsds': ('SWDOWN',   'add'),
         'pr':   ('RAINRATE', 'multiply'),
@@ -185,8 +200,17 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
             spl = RectBivariateSpline(d_lat, d_lon, d_vals, kx=1, ky=1)
             pgw_domain[lname] = (spl.ev(geo_lat_flat, geo_lon_flat).reshape(geo_lat.shape), method)
 
+    z_year = None
     for date in pd.date_range(start_date, end_date, freq= 'D'):
-        
+
+        # z_out_YYYY.grib: model-level geopotential, one time per day (00 UTC); open once per year
+        if date.year != z_year:
+            z_file = xr.open_dataset(os.path.join(raw_data_dir, f'z_out_{date.year}.grib'), engine='cfgrib')
+            z_file_domain = z_file.sel(latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5),
+                                      longitude=slice(geo_lon.min()-0.5, geo_lon.max()+0.5))
+            z_year = date.year
+        z_raw = z_file_domain['z'].sel(time=date, method='nearest').sel(hybrid=int(levelist)).values[::-1, :]
+
         for time in pd.date_range(date, periods=24, freq='h'):
         
             LDASIN_file = xr.Dataset()
@@ -194,7 +218,7 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
             for var in variables:
                 
                 if variables[var]['name'] in ['LWDOWN', 'SWDOWN']: 
-                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_accum_ssrd_strd_tp_era5_single_layer.nc")
+                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_ssrd_strd_sp_tp_era5_single_layer.nc")
                     raw_data_file = xr.open_dataset(filename)
                     data_vars_raw = raw_data_file.sel(
                         latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5), 
@@ -203,7 +227,7 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
                     data_var = data_vars_raw[var].sel(valid_time=time, method='nearest')[::-1].values / 3600
 
                 elif variables[var]['name'] in ['RAINRATE']: 
-                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_accum_ssrd_strd_tp_era5_single_layer.nc")
+                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_ssrd_strd_sp_tp_era5_single_layer.nc")
                     raw_data_file = xr.open_dataset(filename)
                     data_vars_raw = raw_data_file.sel(
                         latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5), 
@@ -212,7 +236,7 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
                     data_var = data_vars_raw[var].sel(valid_time=time, method='nearest')[::-1].values / 3600 * 1000
 
                 elif variables[var]['name'] in ['PSFC']:
-                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_instant_sp_era5_single_layer.nc")
+                    filename = os.path.join(raw_data_dir, f"{date.strftime('%Y%m')}_ssrd_strd_sp_tp_era5_single_layer.nc")
                     raw_data_file = xr.open_dataset(filename)
                     data_vars_raw = raw_data_file.sel(
                         latitude=slice(geo_lat.max()+0.5, geo_lat.min()-0.5), 
@@ -230,15 +254,14 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
                     # data_var = data_vars_raw[var].sel(valid_time=time, model_level=levelist, method='nearest')
                     # data_var_correct_to_msl = (data_var - ( -0.0065 * z_file_domain.sel(hybrid=levelist)['z'].values / 9.80665 ))[::-1].values
                     t_raw = data_vars_raw[var].sel(valid_time=time, model_level=levelist, method='nearest').values[::-1, :]
-                    z_raw = z_file_domain.sel(hybrid=levelist)['z'].values.squeeze()[::-1, :]
                     data_var_correct_to_msl = t_raw - (-0.0065 * z_raw / 9.80665)                
 
                 elif variables[var]['name'] in ['LAI', 'VEGFRA']:
                     if date.is_leap_year:
-                        raw_data_file = xr.open_dataset(os.path.join(output_dir,'LDASIN', f'{var}_leap.nc'))
+                        raw_data_file = xr.open_dataset(os.path.join(output_dir,'LDASIN-Common', f'{var}_leap.nc'))
                         data_var = [raw_data_file[var].sel(date='2020'+str(date.date())[-6:]).values]
                     else:
-                        raw_data_file = xr.open_dataset(os.path.join(output_dir,'LDASIN', f'{var}.nc'))
+                        raw_data_file = xr.open_dataset(os.path.join(output_dir,'LDASIN-Common', f'{var}.nc'))
                         data_var = [raw_data_file[var].sel(date='2021'+str(date.date())[-6:]).values]
 
                 elif variables[var]['name'] in ['AHE']:
@@ -289,15 +312,28 @@ def create_LDASIN_files(start_date, end_date, raw_data_dir, output_dir, geo_em_f
                     LDASIN_file[variables[var]['name']] = (('Time','south_north','west_east'), [data_var_interpolated])
                     LDASIN_file[variables[var]['name']].attrs['units'] = variables[var]['attrs']['units']
 
+            # Q2D with dRH: RH from the original (CTL) T/q/P, add dRH, then back to q with the PGW T/P.
+            # Upper bound keeps already-supersaturated CTL points unchanged when dRH = 0.
+            if pgw_domain.get('Q2D', (None, None))[1] == 'rh':
+                t_pgw = LDASIN_file['T2D'].values[0]
+                p_pgw = LDASIN_file['PSFC'].values[0]
+                q_ctl = LDASIN_file['Q2D'].values[0]
+                t_ctl = t_pgw - pgw_domain['T2D'][0] if 'T2D' in pgw_domain else t_pgw
+                p_ctl = p_pgw - pgw_domain['PSFC'][0] if 'PSFC' in pgw_domain else p_pgw
+                rh_ctl = q_to_rh(q_ctl, t_ctl, p_ctl)
+                rh_pgw = np.clip(rh_ctl + pgw_domain['Q2D'][0], 0, np.maximum(100, rh_ctl))
+                LDASIN_file['Q2D'] = (('Time','south_north','west_east'), [rh_to_q(rh_pgw, t_pgw, p_pgw)])
+                LDASIN_file['Q2D'].attrs['units'] = variables['q']['attrs']['units']
+
             encoding=[{var: {'_FillValue': None}} for var in LDASIN_file.variables]    
             output_filename = f"{time.strftime('%Y%m%d%H')}.LDASIN_DOMAIN{geo_em_file[-4]}"
-            LDASIN_file.to_netcdf(os.path.join(output_dir, 'LDASIN', output_filename), encoding=encoding[0])
+            LDASIN_file.to_netcdf(os.path.join(ldasin_dir, output_filename), encoding=encoding[0])
             print(output_filename)
                         
 def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file, lcz=0):
     
-    if not os.path.exists(output_dir+"/LDASIN"):
-        os.makedirs(output_dir+"/LDASIN")
+    if not os.path.exists(output_dir+"/LDASIN-Common"):
+        os.makedirs(output_dir+"/LDASIN-Common")
 
     variables = {
     
@@ -343,11 +379,11 @@ def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file, lcz=0):
     water_mask = (geo_em.LU_INDEX.values[0] == iswater) | (geo_em.LU_INDEX.values[0] == islake)
 
     if pd.Timestamp(start_date).is_leap_year:
-        LAI = xr.open_dataset(os.path.join(output_dir, 'LDASIN', 'LAI12M_leap.nc'))
+        LAI = xr.open_dataset(os.path.join(output_dir, 'LDASIN-Common', 'LAI12M_leap.nc'))
     else:
-        LAI = xr.open_dataset(os.path.join(output_dir, 'LDASIN', 'LAI12M.nc'))
+        LAI = xr.open_dataset(os.path.join(output_dir, 'LDASIN-Common', 'LAI12M.nc'))
 
-    raw_data_file = xr.open_dataset(os.path.join(raw_data_dir, pd.to_datetime(start_date).strftime('%Y%m%d')+'00_setup.nc'))
+    raw_data_file = xr.open_dataset(os.path.join(raw_data_dir, "setup", pd.to_datetime(start_date).strftime('%Y%m%d')+'00_setup.nc'))
     data_vars_raw = raw_data_file.sel(
         latitude=slice(geo_lat.max(), geo_lat.min()), 
         longitude=slice(geo_lon.min(), geo_lon.max()))
@@ -474,12 +510,12 @@ def create_setup_file(start_date, raw_data_dir, output_dir, geo_em_file, lcz=0):
 
     output_filename = f"HRLDAS_setup_{pd.to_datetime(start_date).strftime('%Y%m%d')}00_d{geo_em_file[-4]}"
     
-    setup_file.to_netcdf(os.path.join(output_dir, 'LDASIN', output_filename))
+    setup_file.to_netcdf(os.path.join(output_dir, 'LDASIN-Common', output_filename))
 
 def create_lai_vegfra(geo_em_file, output_dir):
 
-    if not os.path.exists(output_dir+"/LDASIN"):
-        os.makedirs(output_dir+"/LDASIN")
+    if not os.path.exists(output_dir+"/LDASIN-Common"):
+        os.makedirs(output_dir+"/LDASIN-Common")
 
     for var in ('LAI12M', 'GREENFRAC'):
 
@@ -507,28 +543,28 @@ def create_lai_vegfra(geo_em_file, output_dir):
         LAI[var] = xr.where(mask, 0, LAI[var])
 
         if var=='LAI12M':
-            LAI.sel(date=slice('2020-01-01','2020-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', 'LAI12M_leap.nc'))
-            LAI.sel(date=slice('2021-01-01','2021-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', 'LAI12M.nc'))
+            LAI.sel(date=slice('2020-01-01','2020-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN-Common', 'LAI12M_leap.nc'))
+            LAI.sel(date=slice('2021-01-01','2021-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN-Common', 'LAI12M.nc'))
         else:
-            LAI.sel(date=slice('2020-01-01','2020-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', 'GREENFRAC_leap.nc'))
-            LAI.sel(date=slice('2021-01-01','2021-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN', 'GREENFRAC.nc'))
+            LAI.sel(date=slice('2020-01-01','2020-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN-Common', 'GREENFRAC_leap.nc'))
+            LAI.sel(date=slice('2021-01-01','2021-12-31')).to_netcdf(os.path.join(output_dir, 'LDASIN-Common', 'GREENFRAC.nc'))
 
 
 if __name__ == '__main__':
 
-    start_year = 2011
-    end_year = 2011
+    start_year = 2020
+    end_year = 2020
     loop_start_date = '08-01'
     loop_end_date = '08-07'
     # raw_data_dir = '../hands-on/ERA5/YangtzeDelta/raw/'
-    raw_data_dir = '../hands-on/MIROC6/Tokyo/raw/'
-    output_dir = '../hands-on/MIROC6/Tokyo/'
-    geo_em_file = '../hands-on/MIROC6/Tokyo/geo/geo_em.d03.nc'
-    ahe_file = f'/home/xuelingbo/data/AHF/AHF{start_year}.tif'
+    raw_data_dir = '/home/xuelingbo/NAS_ERA5_HRLDAS/asia/'
+    output_dir = '../hands-on/PGW/Tokyo/'
+    geo_em_file = '../hands-on/PGW/Tokyo/geo/geo_em.d03.nc'
     levelist = '136'
     ZLVL = 30
-    utc_offset = 8
-    pgw_file = '../hands-on/MIROC6/Tokyo/LDASIN/delta_historical_2009-2010_ssp585_2099-2100_08.nc'
+    utc_offset = 9
+    # pgw_file = '../hands-on/PGW/Tokyo/LDASIN-Common/delta_historical_1995-2014_ssp585_2080-2099_08.nc'
+    pgw_file = None
 
     create_lai_vegfra(geo_em_file, output_dir)
 
@@ -541,6 +577,6 @@ if __name__ == '__main__':
         create_LDASIN_files(f'{str(year)}-{loop_start_date}', f'{str(year)}-{loop_end_date}', \
                             raw_data_dir, output_dir, \
                             geo_em_file, levelist, ZLVL, \
-                            pgw_file)
+                            pgw_file = pgw_file)
         
         

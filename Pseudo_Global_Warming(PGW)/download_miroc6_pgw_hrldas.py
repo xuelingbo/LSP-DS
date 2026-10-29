@@ -6,9 +6,9 @@ import csv
 from pathlib import Path
 
 import pandas as pd
-from tap import tapify
+import xarray as xr
 
-from get_6h_url import get_download_urls
+from util import PANGEO_CATALOG_URL
 
 # ============================================================
 # Configurable parameters
@@ -28,6 +28,16 @@ FUTURE_END_DATE     = "2100-12-31"
 DATA_DIR = Path("/home/xuelingbo/LSP-DS-HiClimaX/hands-on/MIROC6/Tokyo/raw")
 EXCLUDE_NODES: list[str] = []
 # EXCLUDE_NODES = ["esgf-node.llnl.gov", "esgf.ceda.ac.uk"]
+
+# --- Amon monthly climatology from Pangeo (Google Cloud zarr) ---
+AMON_VARIABLES = [
+    # surface only, one per LDASIN variable:
+    # T2D, Q2D (via dRH), U2D, V2D, PSFC, SWDOWN, LWDOWN, RAINRATE
+    "tas", "hurs", "uas", "vas", "ps", "rsds", "rlds", "pr",
+]
+AMON_HIST_YEARS     = (1995, 2014)
+AMON_FUTURE_YEARS   = (2080, 2099)
+AMON_DIR = Path("/home/xuelingbo/NAS_CMIP6/MIROC6")
 # ============================================================
 
 _logger = logging.getLogger(__name__)
@@ -118,6 +128,7 @@ def download_miroc6(
     output_dir: Path,
 ) -> None:
     """Fetch URLs and download all files for one experiment."""
+    from get_6h_url import get_download_urls   # needs pyesgf, only for the ESGF (6h) workflow
     _logger.info(f"=== {experiment_id}: {start_date} ~ {end_date} ===")
 
     for var in variables:
@@ -175,6 +186,65 @@ def download_miroc6(
                 print(f"{RED}  Failed (no alternative node): {url.split('/')[-1].split('|')[0]}{RESET}")
 
 
+def download_amon_climatology(
+    experiment_id: str,
+    year_start: int,
+    year_end: int,
+    variables: list[str],
+    output_dir: Path,
+) -> list[str]:
+    """
+    Open Amon data from the Pangeo CMIP6 catalog, average each calendar month over
+    year_start~year_end, and save one file per variable with dims (month, [plev,] lat, lon).
+    Returns the variables that could not be found.
+    """
+    _logger.info(f"=== Amon {experiment_id}: {year_start} ~ {year_end} ===")
+    catalog = pd.read_csv(PANGEO_CATALOG_URL.replace(".json", ".csv"))
+    catalog = catalog[
+        (catalog.source_id == SOURCE_ID)
+        & (catalog.member_id == MEMBER_ID)
+        & (catalog.experiment_id == experiment_id)
+        & (catalog.table_id == "Amon")
+    ]
+
+    missing = []
+    for var_id in variables:
+        rows = catalog[catalog.variable_id == var_id]
+        if rows.empty:
+            _logger.error(f"  {var_id}: not found in Pangeo catalog")
+            missing.append(var_id)
+            continue
+        row = rows.sort_values("version").iloc[-1]   # latest version
+
+        filename = (
+            f"{var_id}_{row.activity_id}.{row.institution_id}.{row.source_id}."
+            f"{row.experiment_id}.{row.table_id}.{row.grid_label}"
+            f"_{row.member_id}_{year_start}_{year_end}.nc"
+        )
+        output_path = output_dir / filename
+        if output_path.exists():
+            print(f"{CYAN}  Already exists, skipping: {filename}{RESET}")
+            continue
+
+        _logger.info(f"  Opening: {row.zstore}")
+        ds = xr.open_zarr(row.zstore, consolidated=True, storage_options={"token": "anon"})
+        ds = ds.sel(time=slice(str(year_start), str(year_end)))
+        n_years = len(set(ds.time.dt.year.values))
+        if n_years != year_end - year_start + 1:
+            _logger.warning(f"  {var_id}: only {n_years} years available in {year_start}-{year_end}")
+
+        clim = ds[[var_id]].groupby("time.month").mean("time", keep_attrs=True)
+        for bnds in ("lat_bnds", "lon_bnds"):
+            if bnds in ds:
+                clim = clim.assign_coords({bnds: ds[bnds]})
+        clim.attrs = ds.attrs
+        clim.attrs["climatology"] = f"monthly mean over {year_start}-{year_end}"
+        clim.load().to_netcdf(output_path)
+        print(f"{CYAN}  Saved: {filename}{RESET}")
+
+    return missing
+
+
 def main():
     import sys
     logging.basicConfig(
@@ -183,11 +253,25 @@ def main():
         force=True,
     )
 
+    # Default: Amon monthly climatology from Pangeo
+    if len(sys.argv) == 1 or sys.argv[1] == "amon":
+        AMON_DIR.mkdir(parents=True, exist_ok=True)
+        missing = (
+            download_amon_climatology(HIST_EXPERIMENT, *AMON_HIST_YEARS, AMON_VARIABLES, AMON_DIR)
+            + download_amon_climatology(FUTURE_EXPERIMENT, *AMON_FUTURE_YEARS, AMON_VARIABLES, AMON_DIR)
+        )
+        if missing:
+            print(f"\n{RED}=== Missing Amon variables: {sorted(set(missing))} ==={RESET}")
+        else:
+            print("\n=== All Amon variables downloaded successfully ===")
+        return
+
+    # "6h": high-frequency files from ESGF (original workflow)
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     # If a CSV is passed as argument, download only those variables
-    if len(sys.argv) > 1:
-        csv_path = DATA_DIR / sys.argv[1]
+    if len(sys.argv) > 2:
+        csv_path = DATA_DIR / sys.argv[2]
         variables = read_variables(csv_path)
         _logger.info(f"Using variable list from: {csv_path}")
         download_miroc6(HIST_EXPERIMENT, HIST_START_DATE, HIST_END_DATE, variables, DATA_DIR)
@@ -222,7 +306,7 @@ def main():
         for v in missing_unique:
             print(f"  {v['var_id']} ({v['table_id']})")
         print(f"Saved to: {missing_csv}")
-        print(f"Re-run with: python {Path(__file__).name} {missing_csv.name}")
+        print(f"Re-run with: python {Path(__file__).name} 6h {missing_csv.name}")
     else:
         print("\n=== All variables downloaded successfully ===")
 

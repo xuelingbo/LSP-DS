@@ -485,7 +485,7 @@ if __name__ == '__main__':
                    0.8745974733, 0.7576414942, 0.6162263020, 0.5046295022]      # local time, Ao, 2019
     levelist = '136'
     ZLVL = 30
-    utc_offset = 8
+    utc_offset = 9
 
     create_lai_vegfra(geo_em_file, output_dir)
 
